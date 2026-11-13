@@ -419,7 +419,8 @@ async function search() {
   const url = "https://clinicaltrials.gov/api/v2/studies?" + new URLSearchParams({ "query.cond": cond.term, "filter.overallStatus": "RECRUITING", "filter.geo": `distance(${lat},${lon},${radius}mi)`, pageSize: "30", fields: FIELDS });
   $("searchBtn").disabled = true; $("trialStatus").className = "status"; $("trialStatus").textContent = "Searching ClinicalTrials.gov…"; $("trialList").innerHTML = "";
   try {
-    const res = await fetch(url);
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 12000);
+    const res = await fetch(url, { signal: ctl.signal }).finally(() => clearTimeout(timer));
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     renderTrials((data.studies || []).map((s) => normalize(s, origin)), origin, `Live from ClinicalTrials.gov, within ${radius} miles of ${label}.`, false);
@@ -439,6 +440,8 @@ $("genoControls").addEventListener("change", (e) => { const s = e.target.closest
 $("medCard").addEventListener("click", (e) => { if (e.target.closest("#printBtn")) return window.print(); const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
 $("handoff").addEventListener("click", (e) => { const b = e.target.closest("[data-cond]"); if (!b) return; if (b.dataset.cond) $("cond").value = b.dataset.cond; $("trials").scrollIntoView({ behavior: "smooth" }); search(); });
 $("searchBtn").addEventListener("click", search);
+$("age").addEventListener("keydown", (e) => { if (e.key === "Enter") search(); });
+if (window.TRIAL_SNAPSHOT) showSample("Preview — press “Find recruiting trials” for live results.", false);
 $("sampleToggle").addEventListener("change", () => { const on = $("sampleToggle").checked; if (on) { $("city").value = "0"; $("radius").value = "150"; } $("city").disabled = $("radius").disabled = on; search(); });
 </script>
 </body>

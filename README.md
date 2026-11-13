@@ -4,6 +4,8 @@
 
 Built for DSH Hacks V2 (AI × Healthcare). Educational demo only — not medical advice.
 
+**Live demo:** https://candicewu0515.github.io/genepath/
+
 ## What it does
 
 1. **Medication gene card** — pick clopidogrel, warfarin or simvastatin and the genotype from a gene report. The card explains what the result means in plain words, what the CPIC guideline says, and how common the variant is across six ancestry groups.
@@ -13,7 +15,7 @@ Built for DSH Hacks V2 (AI × Healthcare). Educational demo only — not medical
 
 Open `index.html` in a browser. No build step, no server, no API key.
 
-To publish, push this folder to GitHub and enable GitHub Pages on the main branch.
+The live site is served by GitHub Pages from the `main` branch; every push updates it.
 
 ## Files
 
@@ -23,12 +25,15 @@ To publish, push this folder to GitHub and enable GitHub Pages on the main branc
 | `snapshot.js` | Saved trial results, used by the "sample data" switch and as a fallback when offline |
 | `data/trials-snapshot.json` | The same snapshot as plain JSON |
 | `tools/make_snapshot.py` | Regenerates the snapshot: `python3 tools/make_snapshot.py` |
-| `pgx-frequency-data.md` | Source table for the allele frequencies hard-coded in the app |
+| `docs/pgx-frequency-data.md` | Source table for the allele frequencies hard-coded in the app |
+| `docs/one-pager.pdf` | One-page project summary (source: `docs/one-pager.html`) |
+| `docs/devpost-description.md` | Project story text for the Devpost page |
+| `docs/demo-script.md` | Script for the demo video |
 
 ## Data sources
 
 - **Allele frequencies:** All of Us Research Program public Data Browser, aggregate data from about 535,000 participants, retrieved 2026-11-12.
-- **Prescribing guidance:** CPIC guidelines for CYP2C19/clopidogrel (2022), warfarin (2017) and statins (2022). The warfarin dose-need bands follow the genotype table in the FDA warfarin label.
+- **Prescribing guidance:** CPIC guidelines for CYP2C19/clopidogrel (2022), warfarin (2017) and statins (2022). The warfarin dose-need bands follow the genotype table in the FDA warfarin label. Recommendation wording was checked against the published CPIC tables on 2026-11-12.
 - **Trials:** ClinicalTrials.gov API v2, queried from the browser at search time.
 
 ## How AI was used

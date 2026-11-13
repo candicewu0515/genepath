@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GenePath — one-page project summary</title>
+<style>
+  @page { size: Letter; margin: 0.55in; }
+  body { font: 9.8pt/1.36 -apple-system, "Helvetica Neue", Arial, sans-serif; color: #14201d; margin: 0; }
+  header { background: #0e2f29; color: #fff; padding: 14px 18px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  h1 { margin: 0; font-size: 22pt; letter-spacing: -0.5px; } h1 span { color: #7fe0cd; }
+  header p { margin: 3px 0 0; color: #cfe6e0; font-size: 10.5pt; }
+  .links { margin: 8px 0 2px; font-size: 9.6pt; color: #5a6b66; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+  h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: .8px; color: #0b7a68; margin: 12px 0 3px; border-bottom: 1px solid #dde5e2; padding-bottom: 2px; }
+  p { margin: 0 0 5px; } ul { margin: 0 0 5px; padding-left: 16px; } li { margin: 1px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.2pt; margin: 3px 0 5px; }
+  th, td { border-bottom: 1px solid #dde5e2; padding: 2px 5px; text-align: right; } th:first-child, td:first-child { text-align: left; }
+  th { color: #5a6b66; font-weight: 600; }
+  .note { background: #fdf0e1; border-radius: 6px; padding: 6px 10px; font-size: 9.4pt; color: #6b3606; margin-top: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Gene<span>Path</span></h1>
+  <p>From one pharmacogenomic report to two real decisions · DSH Hacks V2 · AI × Healthcare</p>
+</header>
+<p class="links"><b>Live demo:</b> candicewu0515.github.io/genepath &nbsp;·&nbsp; <b>Code:</b> github.com/candicewu0515/genepath</p>
+
+<div class="cols">
+<div>
+  <h2>Problem</h2>
+  <p>Pharmacogenomic (PGx) tests are now cheap and common, but the report a patient receives says things like “CYP2C19 *2/*2”. Most people cannot tell whether that matters for a medicine they already take, or what to do next. The same variants are also far more common in some ancestries than others, so a one-size-fits-all dose quietly fails specific populations.</p>
+
+  <h2>Solution</h2>
+  <p>GenePath is a single web page that answers the two questions patients actually ask:</p>
+  <ul>
+    <li><b>Is my medication affected?</b> Pick a drug (clopidogrel, warfarin, simvastatin) and a genotype. A card explains the result in plain words, summarises the CPIC guideline, shows how common the variant is across six ancestry groups, and lists questions to take to the next appointment. The card can be printed.</li>
+    <li><b>Is there a trial that fits me?</b> Pick a condition, age, sex and city. GenePath queries ClinicalTrials.gov live, keeps recruiting studies open to that person, sorts them by distance, and explains each study’s three key entry rules in plain words, with contact details.</li>
+  </ul>
+
+  <h2>How AI is used</h2>
+  <ul>
+    <li>The app was designed and built with AI coding assistants in under two days.</li>
+    <li>Plain-language summaries of the saved sample trials were drafted by AI and reviewed by the author.</li>
+    <li>At run time the page makes <b>no AI calls</b>: explanations of entry rules come from a fixed medical glossary, so nothing a user enters is sent to a model, and the output cannot hallucinate.</li>
+  </ul>
+</div>
+<div>
+  <h2>Data (all public, all real)</h2>
+  <ul>
+    <li><b>All of Us Research Program</b> public Data Browser: aggregate allele frequencies from about 535,000 participants (retrieved 12 Nov 2026).</li>
+    <li><b>CPIC guidelines</b>: clopidogrel–CYP2C19 (2022), warfarin (2017), statins–SLCO1B1 (2022); checked against the published recommendation tables. Warfarin dose bands follow the FDA label genotype table.</li>
+    <li><b>ClinicalTrials.gov API v2</b>: live query from the browser, with a saved snapshot as offline fallback.</li>
+  </ul>
+  <table>
+    <tr><th>Allele frequency</th><th>African</th><th>European</th><th>East Asian</th><th>South Asian</th></tr>
+    <tr><td>CYP2C19*2 (clopidogrel)</td><td>17.9%</td><td>14.6%</td><td>30.9%</td><td>34.4%</td></tr>
+    <tr><td>VKORC1 −1639A (warfarin)</td><td>9.4%</td><td>38.6%</td><td>87.4%</td><td>17.1%</td></tr>
+    <tr><td>CYP2C9*2 (warfarin)</td><td>2.1%</td><td>12.9%</td><td>0.1%</td><td>4.5%</td></tr>
+    <tr><td>SLCO1B1*5 (simvastatin)</td><td>2.8%</td><td>16.0%</td><td>12.7%</td><td>4.8%</td></tr>
+  </table>
+
+  <h2>Privacy and safety by design</h2>
+  <ul>
+    <li>Static page: no account, no server, no storage. The only network request is the public trial search (condition and city).</li>
+    <li>Guideline information is framed for a conversation with a clinician, never as an instruction; no doses are recommended.</li>
+  </ul>
+
+  <h2>Limitations</h2>
+  <ul>
+    <li>Three drugs and four conditions; common variants only (for example, CYP2C9 *5/*6/*8/*11 are not covered).</li>
+    <li>Frequencies are population-level allele frequencies, not individual risk.</li>
+    <li>Glossary explanations simplify medical terms; only the study team can confirm eligibility.</li>
+  </ul>
+
+  <h2>Next steps</h2>
+  <p>Upload of a real PGx report file, more gene–drug pairs from CPIC, trial matching that uses genotype as an entry criterion, and Spanish and Chinese versions.</p>
+</div>
+</div>
+<p class="note"><b>Disclaimer.</b> GenePath is an educational demonstration and does not provide medical advice. Do not start, stop or change any medication based on it.</p>
+</body>
+</html>
