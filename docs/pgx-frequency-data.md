@@ -4,6 +4,8 @@
 样本量：每个位点约 107 万条等位基因（约 53.5 万名有基因组数据的参与者）。
 说明：这是汇总频率，不是任何个体数据；引用时标注 "All of Us Research Program public Data Browser"。
 
+**核实状态：** 2026-11-13 用 `tools/verify_frequencies.py` 对照 All of Us 公开接口逐个核对，表中 36 个分祖源频率全部一致（总频率 15.3% / 19.6% / 9.6% / 5.2% / 35.2% / 12.6%，等位基因总数 1,071,158）。应用实际使用的数据由 `tools/build_pgx_data.py` 直接从接口生成，不再手工录入。
+
 祖源分组缩写：AFR 非洲、EUR 欧洲、AMR 拉美、EAS 东亚、SAS 南亚、MID 中东。
 
 ## 氯吡格雷 — CYP2C19

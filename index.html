@@ -96,7 +96,7 @@
   @media (min-width: 760px) { .card-body { grid-template-columns: 1fr 1fr; gap: 22px; } .bar { grid-template-columns: 190px 1fr 150px; } }
   @media print {
     body { background: #fff; } header.top { background: #fff; color: #000; padding: 0 0 8px; } h1 span, .tagline { color: #000; }
-    nav.steps, #trials, .pillrow, #genoControls, .handoff, .tabs, .ask button, footer p:last-child { display: none !important; }
+    nav.steps, #trials, #medControls, .handoff, .tabs, .ask button, footer p:last-child { display: none !important; }
     section.module { border: 0; padding: 0; } .card, .trial { break-inside: avoid; }
     .bar .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
@@ -117,8 +117,7 @@
     <div class="eyebrow">Step 1</div>
     <h2>Medication gene card</h2>
     <p class="sub">Pick a medication and the result written on your gene report. <i>Pharmacogenomics</i> means how your genes change the way your body handles a drug.</p>
-    <div class="pillrow" id="drugPills"></div>
-    <div class="controls" id="genoControls"></div>
+    <div class="controls" id="medControls"></div>
     <div class="card" id="medCard" aria-live="polite"></div>
     <div class="handoff" id="handoff"></div>
   </section>
@@ -148,136 +147,143 @@
   </footer>
 </div>
 
-<script src="snapshot.js"></script>
+<script src="pgx-data.js?v=2026-11-13"></script>
+<script src="snapshot.js?v=2026-11-13"></script>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-/* ---------------- Module 1: medication gene card ---------------- */
-const GROUPS = [["AFR", "African"], ["EUR", "European"], ["AMR", "Latino / Admixed American"], ["EAS", "East Asian"], ["SAS", "South Asian"], ["MID", "Middle Eastern"]];
+/* ---------------- Module 1: medication gene card ----------------
+   All genotype, phenotype and guideline text comes from window.PGX_DATA, which
+   tools/build_pgx_data.py generates from the CPIC API and the All of Us public
+   Data Browser. Nothing clinical is hand-written here. */
+const D = window.PGX_DATA || { drugs: [], variants: {}, genePlain: {} };
+const GROUPS = ["AFR", "EUR", "AMR", "EAS", "SAS", "MID"];
 const SHORT = { AFR: "African", EUR: "European", AMR: "Latino / Adm. American", EAS: "East Asian", SAS: "South Asian", MID: "Middle Eastern" };
+const CLASS_PLAIN = { Strong: "CPIC rates this as a strong recommendation.", Moderate: "CPIC rates this as a moderate recommendation.", Optional: "CPIC rates this as optional.", "No Recommendation": "CPIC makes no recommendation for this result." };
+// Which trial search follows naturally from a drug's category.
+const GROUP_TRIAL = { "Heart and blood": "afib", "Cholesterol": "chol", "Stomach and reflux": "gerd",
+  "Mental health": "depression", "Pain and inflammation": "oa", "Immune conditions": "ra", "Cancer treatment": "crc" };
 
-// Allele frequencies (%), All of Us public Data Browser, retrieved 2026-11-12. ~1.07M alleles per site.
-const VARIANTS = {
-  c19s2: { label: "CYP2C19*2", rs: "rs4244285", effect: "no-function version of the gene (clopidogrel works less well)", overall: 15.3, f: { AFR: 17.9, EUR: 14.6, AMR: 11.8, EAS: 30.9, SAS: 34.4, MID: 10.0 } },
-  c19s17: { label: "CYP2C19*17", rs: "rs12248560", effect: "increased-function version of the gene (faster activation)", overall: 19.6, f: { AFR: 22.2, EUR: 22.0, AMR: 12.5, EAS: 1.0, SAS: 17.1, MID: 20.4 } },
-  c9s2: { label: "CYP2C9*2", rs: "rs1799853", effect: "slower warfarin breakdown", overall: 9.6, f: { AFR: 2.1, EUR: 12.9, AMR: 8.5, EAS: 0.1, SAS: 4.5, MID: 11.9 } },
-  c9s3: { label: "CYP2C9*3", rs: "rs1057910", effect: "much slower warfarin breakdown", overall: 5.2, f: { AFR: 1.2, EUR: 6.7, AMR: 4.4, EAS: 3.2, SAS: 10.6, MID: 7.1 } },
-  vk: { label: "VKORC1 −1639A", rs: "rs9923231", effect: "more sensitive to warfarin (lower dose needed)", overall: 35.2, f: { AFR: 9.4, EUR: 38.6, AMR: 42.6, EAS: 87.4, SAS: 17.1, MID: 50.5 } },
-  slco5: { label: "SLCO1B1*5", rs: "rs4149056", effect: "reduced liver uptake of statins (higher muscle side-effect risk)", overall: 12.6, f: { AFR: 2.8, EUR: 16.0, AMR: 12.1, EAS: 12.7, SAS: 4.8, MID: 20.8 } },
-};
+// Warfarin is dosed by algorithm rather than a phenotype table, so it keeps a card
+// built from the genotype table in the FDA warfarin label.
+const WARF_C9 = ["*1/*1", "*1/*2", "*1/*3", "*2/*2", "*2/*3", "*3/*3"];
+const WARF_BANDS = { GG: [0, 0, 1, 1, 1, 2], AG: [0, 1, 1, 1, 2, 2], AA: [1, 1, 2, 2, 2, 2] };
 
-const CLOPI_ALT = "For people with acute coronary syndrome or a stent (PCI), the CPIC guideline recommends avoiding clopidogrel when possible and using prasugrel or ticagrelor instead, if there is no reason not to.";
-const DRUGS = {
-  clopidogrel: {
-    name: "Clopidogrel", brand: "Plavix", use: "a blood thinner that stops platelets from clumping, used after stents, heart attacks and some strokes",
-    gene: "CYP2C19", variants: ["c19s2", "c19s17"], condition: "afib",
-    guideline: "CPIC Guideline for CYP2C19 and Clopidogrel (2022 update)", url: "https://cpicpgx.org/guidelines/guideline-for-clopidogrel-and-cyp2c19/",
-    selects: [{ id: "g", label: "CYP2C19 result on your report", options: [
-      ["*1/*1", "*1/*1 — normal metabolizer"], ["*1/*2", "*1/*2 — intermediate metabolizer"], ["*2/*2", "*2/*2 — poor metabolizer"],
-      ["*1/*17", "*1/*17 — rapid metabolizer"], ["*17/*17", "*17/*17 — ultrarapid metabolizer"], ["*2/*17", "*2/*17 — intermediate metabolizer"]] }],
-    result(v) {
-      const R = {
-        "*1/*1": ["ok", "Normal metabolizer", "Your liver enzyme CYP2C19 works as expected. Clopidogrel is a “prodrug”: it only works after this enzyme switches it on, and yours does that normally.", "Standard clopidogrel dosing is expected to work as intended. No genetics-based change is suggested by CPIC."],
-        "*1/*2": ["warn", "Intermediate metabolizer", "One of your two CYP2C19 gene copies does not work. Your body switches on less clopidogrel than usual, so the drug may protect you less well against clots.", CLOPI_ALT + " CPIC rates this recommendation as strong. Worth raising with your cardiologist or pharmacist."],
-        "*2/*2": ["danger", "Poor metabolizer", "Neither of your CYP2C19 gene copies works. Your body switches on very little clopidogrel, so the drug may give you much weaker protection against clots.", CLOPI_ALT + " CPIC rates this recommendation as strong — bring this result to your prescriber."],
-        "*1/*17": ["ok", "Rapid metabolizer", "One of your CYP2C19 gene copies is extra active. Your body switches on clopidogrel at least as well as usual.", "Standard clopidogrel dosing is expected to work. No genetics-based change is suggested by CPIC."],
-        "*17/*17": ["ok", "Ultrarapid metabolizer", "Both of your CYP2C19 gene copies are extra active. Your body switches on clopidogrel very efficiently.", "Standard clopidogrel dosing is expected to work. No genetics-based change is suggested by CPIC."],
-        "*2/*17": ["warn", "Intermediate metabolizer", "You carry one non-working copy (*2) and one extra-active copy (*17). The extra-active copy does not fully make up for the non-working one, so this is treated as reduced function.", CLOPI_ALT + " CPIC rates this recommendation as strong. Worth raising with your cardiologist or pharmacist."],
-      }[v.g];
-      return { level: R[0], title: R[1], meaning: R[2], action: R[3], focus: v.g.includes("*17") && !v.g.includes("*2") ? "c19s17" : "c19s2" };
-    },
-  },
-  warfarin: {
-    name: "Warfarin", brand: "Coumadin", use: "a blood thinner used for atrial fibrillation, clots and mechanical heart valves; the right dose differs a lot between people",
-    gene: "CYP2C9 + VKORC1", variants: ["vk", "c9s2", "c9s3"], condition: "afib",
-    guideline: "CPIC Guideline for Pharmacogenetics-Guided Warfarin Dosing (2017 update)", url: "https://cpicpgx.org/guidelines/guideline-for-warfarin-and-cyp2c9-and-vkorc1/",
-    selects: [
-      { id: "c9", label: "CYP2C9 result", options: [["*1/*1", "*1/*1 — normal"], ["*1/*2", "*1/*2 — mildly reduced"], ["*1/*3", "*1/*3 — reduced"], ["*2/*2", "*2/*2 — reduced"], ["*2/*3", "*2/*3 — strongly reduced"], ["*3/*3", "*3/*3 — strongly reduced"]] },
-      { id: "vk", label: "VKORC1 −1639 result", options: [["GG", "G/G — typical sensitivity"], ["AG", "A/G — more sensitive"], ["AA", "A/A — most sensitive"]] }],
-    result(v) {
-      // Dose-need band (0 typical, 1 lower, 2 much lower), following the genotype table in the FDA warfarin label.
-      const band = { GG: [0, 0, 1, 1, 1, 2], AG: [0, 1, 1, 1, 2, 2], AA: [1, 1, 2, 2, 2, 2] }[v.vk][["*1/*1", "*1/*2", "*1/*3", "*2/*2", "*2/*3", "*3/*3"].indexOf(v.c9)];
-      const c9txt = v.c9 === "*1/*1" ? "Your CYP2C9 enzyme clears warfarin at the usual speed." : "Your CYP2C9 enzyme clears warfarin more slowly than usual, so the drug stays in your body longer.";
-      const vktxt = v.vk === "GG" ? "Your VKORC1 result means typical sensitivity to warfarin." : v.vk === "AG" ? "Your VKORC1 result means you are somewhat more sensitive to warfarin." : "Your VKORC1 result means you are highly sensitive to warfarin.";
-      const T = [["ok", "Typical dose need expected"], ["warn", "Lower dose need likely"], ["danger", "Much lower dose need likely"]][band];
-      const act = ["Your genes do not point to an unusual dose. Dosing is still individual and guided by regular INR blood tests.",
-        "People with this combination usually end up on a lower-than-average dose. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, alongside INR blood tests.",
-        "People with this combination usually need a much lower dose and can take longer to reach a stable level. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, with close INR monitoring."][band];
-      const alt = v.c9 === "*2/*3" || v.c9 === "*3/*3" ? " For this CYP2C9 result, CPIC also notes that a different oral blood thinner might be considered." : "";
-      return { level: T[0], title: T[1], meaning: c9txt + " " + vktxt, action: act + alt + " Note: for people of African ancestry, CPIC advises also testing additional CYP2C9 variants (*5, *6, *8, *11) that this simple card does not cover.",
-        focus: v.vk !== "GG" ? "vk" : v.c9.includes("*3") ? "c9s3" : v.c9.includes("*2") ? "c9s2" : "vk" };
-    },
-  },
-  simvastatin: {
-    name: "Simvastatin", brand: "Zocor", use: "a statin that lowers cholesterol; its best-known side effect is muscle pain or, rarely, muscle damage",
-    gene: "SLCO1B1", variants: ["slco5"], condition: null,
-    guideline: "CPIC Guideline for SLCO1B1, ABCG2, CYP2C9 and Statin-Associated Musculoskeletal Symptoms (2022)", url: "https://cpicpgx.org/guidelines/cpic-guideline-for-statins/",
-    selects: [{ id: "g", label: "SLCO1B1 result on your report", options: [["TT", "*1/*1 (T/T) — normal function"], ["TC", "*1/*5 (T/C) — decreased function"], ["CC", "*5/*5 (C/C) — poor function"]] }],
-    result(v) {
-      const R = {
-        TT: ["ok", "Normal function", "SLCO1B1 makes a transporter that pulls statins out of the blood into the liver. Yours works normally, so simvastatin levels in your blood are expected to be typical.", "No genetics-based change is suggested by CPIC. Usual statin choice and dose apply."],
-        TC: ["warn", "Decreased function", "One of your two SLCO1B1 gene copies works less well. More simvastatin stays in your bloodstream, which raises the chance of muscle pain or muscle injury.", "CPIC recommends that prescribers consider a different statin (for example rosuvastatin or pravastatin), or, if simvastatin is still needed, keep it at a low dose (CPIC: under 20 mg a day). Report new muscle pain to your clinician."],
-        CC: ["danger", "Poor function", "Both of your SLCO1B1 gene copies work poorly. Simvastatin builds up in your bloodstream much more than usual, with a clearly higher risk of muscle injury.", "CPIC recommends that prescribers choose a different statin rather than simvastatin. Bring this result to your prescriber; do not stop a statin on your own."],
-      }[v.g];
-      return { level: R[0], title: R[1], meaning: R[2], action: R[3], focus: "slco5" };
-    },
-  },
-};
+const med = { drug: D.drugs.length ? D.drugs[0].key : null, geno: 0, c9: "*1/*2", vk: "AG", variant: null };
+const drugOf = (k) => D.drugs.find((d) => d.key === k);
+const variantsOf = (d) => Object.values(D.variants).filter((v) => v.gene === d.gene || (d.special === "warfarin" && v.gene === "CYP2C9"));
 
-const med = { drug: "clopidogrel", values: {}, variant: null };
-
-function renderDrugPills() {
-  $("drugPills").innerHTML = Object.entries(DRUGS).map(([k, d]) => `<button class="pill" data-drug="${k}" aria-pressed="${k === med.drug}">${d.name}</button>`).join("");
+function renderMedControls() {
+  const d = drugOf(med.drug);
+  const cats = [...new Set(D.drugs.map((x) => x.group))];
+  const drugSel = `<div><label for="drugSel">Medication</label><select id="drugSel">${cats.map((c) =>
+    `<optgroup label="${esc(c)}">${D.drugs.filter((x) => x.group === c).map((x) =>
+      `<option value="${esc(x.key)}" ${x.key === med.drug ? "selected" : ""}>${esc(x.name)}${x.gene ? " · " + esc(x.gene) : ""}</option>`).join("")}</optgroup>`).join("")}</select></div>`;
+  let genoSel;
+  if (d.special === "warfarin") {
+    genoSel = `<div><label for="sel_c9">CYP2C9 result</label><select id="sel_c9">${WARF_C9.map((g) =>
+        `<option value="${g}" ${g === med.c9 ? "selected" : ""}>${g}</option>`).join("")}</select></div>
+      <div><label for="sel_vk">VKORC1 −1639 result</label><select id="sel_vk">${[["GG", "G/G — typical sensitivity"], ["AG", "A/G — more sensitive"], ["AA", "A/A — most sensitive"]].map(([v, t]) =>
+        `<option value="${v}" ${v === med.vk ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>`;
+  } else {
+    if (med.geno >= d.diplotypes.length) med.geno = 0;
+    genoSel = `<div><label for="sel_g">${esc(d.gene)} result on your report</label><select id="sel_g">${d.diplotypes.map((p, i) =>
+      `<option value="${i}" ${i === med.geno ? "selected" : ""}>${esc(p.diplotype)} — ${esc(p.phenotype)}</option>`).join("")}</select></div>`;
+  }
+  $("medControls").innerHTML = drugSel + genoSel;
 }
-function renderGenoControls() {
-  const d = DRUGS[med.drug];
-  med.values = {};
-  $("genoControls").innerHTML = d.selects.map((s) => {
-    med.values[s.id] = s.options[med.drug === "clopidogrel" ? 2 : 0][0];
-    return `<div><label for="sel_${s.id}">${esc(s.label)}</label><select id="sel_${s.id}" data-sel="${s.id}">${s.options.map(([v, t]) => `<option value="${esc(v)}" ${v === med.values[s.id] ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>`;
-  }).join("");
+
+function warfarinResult() {
+  const band = WARF_BANDS[med.vk][WARF_C9.indexOf(med.c9)];
+  const T = [["ok", "Typical dose need expected"], ["warn", "Lower dose need likely"], ["danger", "Much lower dose need likely"]][band];
+  const c9 = med.c9 === "*1/*1" ? "Your CYP2C9 enzyme clears warfarin at the usual speed." : "Your CYP2C9 enzyme clears warfarin more slowly than usual, so the drug stays in your body longer.";
+  const vk = med.vk === "GG" ? "Your VKORC1 result means typical sensitivity to warfarin." : med.vk === "AG" ? "Your VKORC1 result means you are somewhat more sensitive to warfarin." : "Your VKORC1 result means you are highly sensitive to warfarin.";
+  const act = ["Your genes do not point to an unusual dose. Dosing is still individual and guided by regular INR blood tests.",
+    "People with this combination usually end up on a lower-than-average dose. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, alongside INR blood tests.",
+    "People with this combination usually need a much lower dose and can take longer to reach a stable level. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, with close INR monitoring."][band];
+  const alt = med.c9 === "*2/*3" || med.c9 === "*3/*3" ? " For this CYP2C9 result, CPIC also notes that a different oral blood thinner might be considered." : "";
+  return { severity: T[0], phenotype: T[1], meaning: c9 + " " + vk, implication: "", recommendation: act + alt,
+    classification: "", result: `${med.c9}, VKORC1 ${med.vk}`,
+    extra: "Dose bands follow the CYP2C9 × VKORC1 table in the FDA warfarin label. For people of African ancestry, CPIC advises also testing CYP2C9 *5, *6, *8 and *11, which this card does not cover." };
 }
-function carrierPct(p) { const q = p / 100; return (1 - (1 - q) * (1 - q)) * 100; }
-function renderMedCard(resetVariant) {
-  const d = DRUGS[med.drug], r = d.result(med.values);
-  if (resetVariant || !d.variants.includes(med.variant)) med.variant = r.focus;
-  const v = VARIANTS[med.variant];
-  const max = Math.max(...Object.values(v.f), v.overall);
-  const top = Object.entries(v.f).sort((a, b) => b[1] - a[1])[0][0];
-  const bars = GROUPS.map(([k]) => `<div class="bar ${k === top ? "hi" : ""}"><div class="name">${SHORT[k]}</div><div class="track"><div class="fill" style="width:${(v.f[k] / max * 100).toFixed(1)}%"></div></div><div class="val">${v.f[k].toFixed(1)}% <small>· ~${carrierPct(v.f[k]).toFixed(0)}% carry</small></div></div>`).join("")
-    + `<div class="bar"><div class="name"><i>All participants</i></div><div class="track"><div class="fill" style="width:${(v.overall / max * 100).toFixed(1)}%;background:#c9d3d0"></div></div><div class="val">${v.overall.toFixed(1)}%</div></div>`;
-  const sorted = Object.entries(v.f).sort((a, b) => b[1] - a[1]), hi = sorted[0], lo = sorted[sorted.length - 1];
-  const insight = `Most common in people of ${SHORT[hi[0]]} ancestry (${hi[1].toFixed(1)}%) — about ${(hi[1] / lo[1]).toFixed(hi[1] / lo[1] >= 10 ? 0 : 1)}× the rate in ${SHORT[lo[0]]} ancestry (${lo[1].toFixed(1)}%). A test panel or dose designed around one population can miss this.`;
-  const asks = r.level === "ok"
-    ? ["Is this gene result recorded in my medical chart, so future prescribers can see it?", "Are there other medicines I take that this gene also affects?", "Should my close relatives know about this result?"]
-    : [`Does my ${d.gene} result change how well or how safely ${d.name.toLowerCase()} works for me?`, "Is there an alternative medicine or dose you would consider, given this result?", "Is this gene result recorded in my medical chart, and should my relatives be tested?"];
-  const tabs = d.variants.length > 1 ? `<div class="tabs">${d.variants.map((k) => `<button data-variant="${k}" aria-pressed="${k === med.variant}">${VARIANTS[k].label}</button>`).join("")}</div>` : "";
-  $("medCard").innerHTML = `
-    <div class="card-head ${r.level}"><span class="badge">${esc(d.gene)}</span><strong>${esc(d.name)} · ${esc(r.title)}</strong></div>
-    <div class="card-body">
-      <div><h3>What this means</h3><p>${esc(r.meaning)}</p><p class="glossline">${esc(d.name)} (${esc(d.brand)}) is ${esc(d.use)}.</p></div>
-      <div><h3>What the guideline says</h3><p>${esc(r.action)}</p><p class="glossline">This is guideline information for a conversation with your clinician, not a personal recommendation.</p></div>
-    </div>
-    <div class="chart">
+
+function phenoResult(d) {
+  const p = d.diplotypes[med.geno];
+  const r = (d.recommendations || {})[p.key] || {};
+  const plain = D.genePlain[d.gene] || "";
+  return { severity: p.severity, phenotype: p.phenotype, result: p.diplotype,
+    meaning: `${plain} Your result, ${p.diplotype}, is ${(p.description || "").charAt(0).toLowerCase() + (p.description || "").slice(1)}. CPIC classes that as ${p.phenotype.toLowerCase()}.`,
+    implication: r.implication || "", recommendation: r.recommendation || "No recommendation.",
+    classification: r.classification || "", extra: d.note || "" };
+}
+
+function renderMedCard(reset) {
+  const d = drugOf(med.drug);
+  if (!d) return;
+  const r = d.special === "warfarin" ? warfarinResult() : phenoResult(d);
+  const vs = variantsOf(d);
+  if (reset || !vs.some((v) => v.label === med.variant)) med.variant = vs.length ? vs[0].label : null;
+  const v = vs.find((x) => x.label === med.variant);
+
+  let chart = "";
+  if (v) {
+    const max = Math.max(...GROUPS.map((g) => v.groups[g].freq), v.overall);
+    const order = [...GROUPS].sort((a, b) => v.groups[b].freq - v.groups[a].freq);
+    const hi = order[0], lo = order[order.length - 1];
+    const bars = GROUPS.map((g) => `<div class="bar ${g === hi ? "hi" : ""}"><div class="name">${SHORT[g]}</div><div class="track"><div class="fill" style="width:${(v.groups[g].freq / max * 100).toFixed(1)}%"></div></div><div class="val">${v.groups[g].freq.toFixed(1)}% <small>· ${v.groups[g].carriers < 10 ? v.groups[g].carriers.toFixed(1) : v.groups[g].carriers.toFixed(0)}% carry</small></div></div>`).join("")
+      + `<div class="bar"><div class="name"><i>All participants</i></div><div class="track"><div class="fill" style="width:${(v.overall / max * 100).toFixed(1)}%;background:#c9d3d0"></div></div><div class="val">${v.overall.toFixed(1)}%</div></div>`;
+    const top = v.groups[hi].freq, bot = v.groups[lo].freq, ratio = bot ? top / bot : Infinity;
+    const miss = " A test panel or dose designed around one population can miss this.";
+    const insight = bot === 0
+      ? `Seen in people of ${SHORT[hi]} ancestry (${top.toFixed(1)}%) but not detected at all in ${SHORT[lo]} ancestry in this dataset.${miss}`
+      : ratio >= 1.5
+        ? `Most common in people of ${SHORT[hi]} ancestry (${top.toFixed(1)}%) — about ${ratio.toFixed(ratio >= 10 ? 0 : 1)}× the rate in ${SHORT[lo]} ancestry (${bot.toFixed(1)}%).${miss}`
+        : `This variant is spread fairly evenly across ancestry groups, from ${bot.toFixed(1)}% to ${top.toFixed(1)}%.`;
+    const tabs = vs.length > 1 ? `<div class="tabs">${vs.map((x) => `<button data-variant="${esc(x.label)}" aria-pressed="${x.label === med.variant}">${esc(x.label)}</button>`).join("")}</div>` : "";
+    chart = `<div class="chart">
       <h3>How common is this variant around the world?</h3>
-      <p class="hint"><b>${esc(v.label)}</b> (${esc(v.rs)}) — ${esc(v.effect)}. Bars show <b>allele frequency</b>: the share of gene copies carrying the variant, not the share of people. “~% carry” is the estimated share of people with at least one copy (Hardy–Weinberg estimate).</p>
+      <p class="hint"><b>${esc(v.label)}</b> (${esc(v.rs)}) — ${esc(v.effect)}. Bars show <b>allele frequency</b>: the share of gene copies carrying the variant, not the share of people. “% carry” is the observed share of people with at least one copy.</p>
       ${tabs}<div class="bars">${bars}</div>
       <p class="insight">${esc(insight)}</p>
+    </div>`;
+  }
+
+  const asks = r.severity === "ok"
+    ? ["Is this gene result recorded in my medical chart, so future prescribers can see it?", `Are there other medicines I take that ${d.gene} also affects?`, "Should my close relatives know about this result?"]
+    : [`Does my ${d.gene} result change how well or how safely ${d.name.toLowerCase()} works for me?`, "Is there an alternative medicine or dose you would consider, given this result?", "Is this gene result recorded in my medical chart, and should my relatives be tested?"];
+
+  $("medCard").innerHTML = `
+    <div class="card-head ${r.severity}"><span class="badge">${esc(d.gene)}</span><strong>${esc(d.name)} · ${esc(r.phenotype)}</strong></div>
+    <div class="card-body">
+      <div><h3>What your result means</h3><p>${esc(r.meaning)}</p>
+        <p class="glossline">${esc(d.name)}${d.brand ? " (" + esc(d.brand) + ")" : ""} is ${esc(d.use)}.</p></div>
+      <div><h3>What the guideline says</h3>
+        ${r.implication ? `<p><b>Effect:</b> ${esc(r.implication)}.</p>` : ""}
+        <p>${esc(r.recommendation)}</p>
+        <p class="glossline">${esc(CLASS_PLAIN[r.classification] || "")} ${esc(r.extra)} This is guideline information for a conversation with your clinician, not a personal recommendation.</p></div>
     </div>
+    ${chart}
     <div class="ask"><h3>Questions to take to your next appointment</h3><ul>${asks.map((q) => `<li>${esc(q)}</li>`).join("")}</ul><button class="ghost" id="printBtn" type="button">Print this card</button></div>
-    <div class="source">Frequencies: All of Us Research Program public Data Browser, aggregate data from ~535,000 participants, retrieved Nov 2026 · Guidance: <a href="${d.url}" target="_blank" rel="noopener">${esc(d.guideline)}</a></div>`;
-  const c = CONDITIONS.find((x) => x.key === d.condition);
-  $("handoff").innerHTML = `<span>Next question: is there a study recruiting people like me?</span><button class="ghost" id="handoffBtn" data-cond="${c ? c.key : ""}">${c ? "See recruiting " + esc(c.label.toLowerCase()) + " trials" : "Explore recruiting trials"} →</button>`;
+    <div class="source">Guideline text quoted from CPIC (api.cpicpgx.org) · Frequencies: All of Us Research Program public Data Browser, ${(D.builtFrom.alleles / 2 / 1000).toFixed(0)},000 participants · Built ${esc(D.builtFrom.built || "Nov 2026")}</div>`;
+
+  const cond = GROUP_TRIAL[d.group];
+  const label = (CONDITIONS.find((c) => c.key === cond) || {}).label || "";
+  $("handoff").innerHTML = `<span>Next question: is there a study recruiting people like me?</span><button class="ghost" id="handoffBtn" data-cond="${cond || ""}">${cond ? "See recruiting " + esc(label) + " trials" : "Explore recruiting trials"} →</button>`;
 }
 
 /* ---------------- Module 2: clinical trial navigator ---------------- */
 const CONDITIONS = [
   { key: "afib", label: "Atrial fibrillation", term: "atrial fibrillation" },
+  { key: "chol", label: "High cholesterol", term: "hypercholesterolemia" },
+  { key: "gerd", label: "Acid reflux (GERD)", term: "gastroesophageal reflux" },
+  { key: "depression", label: "Depression", term: "depression" },
+  { key: "oa", label: "Osteoarthritis", term: "osteoarthritis" },
+  { key: "ra", label: "Rheumatoid arthritis", term: "rheumatoid arthritis" },
+  { key: "crc", label: "Colorectal cancer", term: "colorectal cancer" },
   { key: "alzheimers", label: "Alzheimer’s disease", term: "Alzheimer disease" },
   { key: "t2d", label: "Type 2 diabetes", term: "type 2 diabetes" },
-  { key: "crc", label: "Colorectal cancer", term: "colorectal cancer" },
 ];
 const CITIES = [["Iowa City, IA", 41.6611, -91.5302], ["Chicago, IL", 41.8781, -87.6298], ["Minneapolis, MN", 44.9778, -93.265], ["St. Louis, MO", 38.627, -90.1994],
   ["New York, NY", 40.7128, -74.006], ["Boston, MA", 42.3601, -71.0589], ["Philadelphia, PA", 39.9526, -75.1652], ["Washington, DC", 38.9072, -77.0369],
@@ -285,33 +291,6 @@ const CITIES = [["Iowa City, IA", 41.6611, -91.5302], ["Chicago, IL", 41.8781, -
   ["Denver, CO", 39.7392, -104.9903], ["Phoenix, AZ", 33.4484, -112.074], ["Los Angeles, CA", 34.0522, -118.2437], ["San Francisco, CA", 37.7749, -122.4194], ["Seattle, WA", 47.6062, -122.3321]];
 const FIELDS = "NCTId,BriefTitle,OverallStatus,BriefSummary,EligibilityCriteria,MinimumAge,MaximumAge,Sex,Phase,StudyType,CentralContactName,CentralContactPhone,CentralContactEMail,LocationFacility,LocationCity,LocationState,LocationCountry,LocationGeoPoint,LocationStatus";
 
-// One-sentence plain-language summaries for the saved sample trials (AI-drafted in advance, reviewed by the author).
-const PLAIN_TITLES = {
-  NCT04088071: "A registry that follows people having a catheter ablation for an irregular heartbeat, to see how safe and effective it is in everyday care.",
-  NCT07575269: "Tests a new catheter system that maps the heart and treats atrial fibrillation with short electrical pulses.",
-  NCT06324201: "Follows people treated with a specific ablation catheter to check long-term safety and results for on-and-off atrial fibrillation.",
-  NCT07227532: "Checks the long-term safety and results of a pulsed-field ablation catheter for on-and-off atrial fibrillation.",
-  NCT05963698: "Compares closing off a small pouch in the heart (where clots form) against staying on blood thinners to prevent stroke.",
-  NCT05712200: "Tests a monthly injected blood thinner for older adults with atrial fibrillation who cannot take the usual blood-thinner pills.",
-  NCT06230783: "Studies whether changes in the way people speak can reveal early signs of Alzheimer’s disease.",
-  NCT07602582: "A follow-on study of the Alzheimer’s drug donanemab for people who already finished an earlier donanemab trial.",
-  NCT07413744: "An early study of whether changing gut bacteria could affect memory and Alzheimer’s disease.",
-  NCT03954899: "Tests whether a nightly 5 mg melatonin tablet can help protect memory and brain health in older adults.",
-  NCT07032350: "Tests an app that helps family caregivers manage pain in a relative living with dementia.",
-  NCT07812337: "Tests a tool that helps primary-care doctors and older adults decide about blood tests for Alzheimer’s disease.",
-  NCT07817251: "Looks at how well people with type 2 diabetes tolerate switching from semaglutide to a newer combination injection.",
-  NCT07684144: "A long-term follow-on study of a monthly weight and blood-sugar injection, for people who finished the earlier trial.",
-  NCT07392190: "Tests an add-on weekly injection for people who still have obesity while already on a GLP-1-type medicine.",
-  NCT07282613: "Tests whether a weekly combination injection lowers blood sugar and weight in children and teens with type 2 diabetes.",
-  NCT07784270: "Tests a new injectable medicine for adults with type 2 diabetes who also have overweight or obesity.",
-  NCT07662213: "Compares a new once-daily diabetes pill with semaglutide in adults with type 2 diabetes.",
-  NCT07221357: "Compares a new antibody plus chemotherapy with the standard antibody plus chemotherapy as first treatment for advanced colorectal cancer.",
-  NCT05919264: "An early study of a new targeted drug for advanced cancers, including colorectal cancer, with specific gene changes.",
-  NCT03947385: "An early study of a targeted drug for solid tumors that carry particular gene changes.",
-  NCT07020117: "An early study of a radioactive drug that seeks out and treats advanced solid tumors.",
-  NCT06750094: "Compares a newer antibody with standard antibodies, each with chemotherapy, for advanced colorectal cancer without certain gene mutations.",
-  NCT05592626: "An early study of an immune-activating antibody drug for advanced solid tumors.",
-};
 
 // Rule-based plain-language notes: [pattern, explanation]. First two matches are shown.
 const GLOSSARY = [
@@ -373,7 +352,7 @@ function normalize(study, origin) {
   return { id, title: clean(p.identificationModule?.briefTitle), status: p.statusModule?.overallStatus, summary: clean(p.descriptionModule?.briefSummary),
     type: p.designModule?.studyType, phases: (p.designModule?.phases || []).filter((x) => x !== "NA"),
     minAge: years(e.minimumAge), maxAge: years(e.maximumAge), minAgeTxt: e.minimumAge, maxAgeTxt: e.maximumAge, sex: e.sex || "ALL",
-    criteria: keyCriteria(e.eligibilityCriteria), locs, contact: (cl.centralContacts || [])[0], plain: PLAIN_TITLES[id] };
+    criteria: keyCriteria(e.eligibilityCriteria), locs, contact: (cl.centralContacts || [])[0] };
 }
 function firstSentence(s) { const m = /^(.{40,220}?[.!?])(\s|$)/.exec(s || ""); return m ? m[1] : (s || "").slice(0, 200); }
 
@@ -390,9 +369,9 @@ function renderTrials(list, origin, note, isErr) {
     const c = t.contact;
     const contact = c ? `${esc(c.name || "Study contact")}${c.phone ? " · " + esc(c.phone) : ""}${c.email ? ` · <a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}` : "See the study page for site contacts";
     return `<article class="trial">
-      <h3>${esc(t.plain || t.title)}</h3>
-      ${t.plain ? "" : `<p class="lead">${esc(firstSentence(t.summary))}</p>`}
-      <p class="official">${t.plain ? "Official title: " + esc(t.title) + " · " : ""}<a href="https://clinicaltrials.gov/study/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.id)}</a></p>
+      <h3>${esc(t.title)}</h3>
+      <p class="lead">${esc(firstSentence(t.summary))}</p>
+      <p class="official"><a href="https://clinicaltrials.gov/study/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.id)}</a></p>
       <div class="chips"><span class="chip">${t.status === "RECRUITING" ? "Recruiting now" : esc(t.status)}</span>
         ${near ? `<span class="chip">${esc(near.city)}, ${esc(near.state)} · ${near.dist < 1 ? "under 1" : Math.round(near.dist)} mi from ${esc(origin.label)}</span>` : `<span class="chip grey">Location not listed</span>`}
         <span class="chip grey">Ages: ${esc(ageTxt)}</span>
@@ -409,21 +388,36 @@ function showSample(note, isErr) {
   const snap = window.TRIAL_SNAPSHOT;
   if (!snap) { $("trialStatus").className = "status err"; $("trialStatus").textContent = "Sample data file (snapshot.js) is missing."; return; }
   const list = (snap.conditions[$("cond").value] || []).map((s) => normalize(s, snap.origin));
-  renderTrials(list, snap.origin, `${note} Sample data saved ${snap.fetchedAt} for ${snap.origin.label} (within ${snap.radiusMiles} miles).`, isErr);
+  const r = (snap.radiusByCondition || {})[$("cond").value];
+  const where = r ? `near ${snap.origin.label} (within ${r} miles)` : "across the United States";
+  renderTrials(list, snap.origin, `${note} Sample data saved ${snap.fetchedAt}, ${where}.`, isErr);
 }
 async function search() {
   if ($("sampleToggle").checked) return showSample("", false);
   const cond = CONDITIONS.find((c) => c.key === $("cond").value);
   const [label, lat, lon] = CITIES[+$("city").value];
   const origin = { label, lat, lon }, radius = $("radius").value;
-  const url = "https://clinicaltrials.gov/api/v2/studies?" + new URLSearchParams({ "query.cond": cond.term, "filter.overallStatus": "RECRUITING", "filter.geo": `distance(${lat},${lon},${radius}mi)`, pageSize: "30", fields: FIELDS });
+  const ask = async (miles) => {
+    const p = { "query.cond": cond.term, "filter.overallStatus": "RECRUITING", pageSize: "30", fields: FIELDS };
+    if (miles) p["filter.geo"] = `distance(${lat},${lon},${miles}mi)`;
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 12000);
+    const res = await fetch("https://clinicaltrials.gov/api/v2/studies?" + new URLSearchParams(p), { signal: ctl.signal })
+      .finally(() => clearTimeout(timer));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return ((await res.json()).studies || []).map((s) => normalize(s, origin));
+  };
   $("searchBtn").disabled = true; $("trialStatus").className = "status"; $("trialStatus").textContent = "Searching ClinicalTrials.gov…"; $("trialList").innerHTML = "";
   try {
-    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 12000);
-    const res = await fetch(url, { signal: ctl.signal }).finally(() => clearTimeout(timer));
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    renderTrials((data.studies || []).map((s) => normalize(s, origin)), origin, `Live from ClinicalTrials.gov, within ${radius} miles of ${label}.`, false);
+    // Widen the search rather than show an empty page for a rarer condition.
+    const steps = [+radius, 500, null].filter((m, i, a) => i === 0 || m === null || m > a[0]);
+    let list = [], used = steps[0];
+    for (const miles of steps) {
+      list = await ask(miles); used = miles;
+      if (list.length) break;
+    }
+    const where = used ? `within ${used} miles of ${label}` : "across the United States";
+    const widened = used !== steps[0] ? ` No studies within ${radius} miles, so the search was widened.` : "";
+    renderTrials(list, origin, `Live from ClinicalTrials.gov, ${where}.${widened}`, false);
   } catch (err) {
     showSample("Could not reach ClinicalTrials.gov, so this is saved sample data instead.", true);
   } finally { $("searchBtn").disabled = false; }
@@ -433,10 +427,16 @@ async function search() {
 $("cond").innerHTML = CONDITIONS.map((c) => `<option value="${c.key}">${c.label}</option>`).join("");
 $("city").innerHTML = CITIES.map((c, i) => `<option value="${i}">${c[0]}</option>`).join("");
 $("radius").innerHTML = [50, 150, 300].map((r) => `<option value="${r}" ${r === 150 ? "selected" : ""}>${r} miles</option>`).join("");
-renderDrugPills(); renderGenoControls(); renderMedCard(true);
+renderMedControls(); renderMedCard(true);
 
-$("drugPills").addEventListener("click", (e) => { const b = e.target.closest("[data-drug]"); if (!b) return; med.drug = b.dataset.drug; renderDrugPills(); renderGenoControls(); renderMedCard(true); });
-$("genoControls").addEventListener("change", (e) => { const s = e.target.closest("[data-sel]"); if (!s) return; med.values[s.dataset.sel] = s.value; renderMedCard(true); });
+$("medControls").addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.id === "drugSel") { med.drug = t.value; med.geno = 0; renderMedControls(); renderMedCard(true); $("drugSel").focus(); return; }
+  if (t.id === "sel_g") med.geno = +t.value;
+  if (t.id === "sel_c9") med.c9 = t.value;
+  if (t.id === "sel_vk") med.vk = t.value;
+  renderMedCard(true);
+});
 $("medCard").addEventListener("click", (e) => { if (e.target.closest("#printBtn")) return window.print(); const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
 $("handoff").addEventListener("click", (e) => { const b = e.target.closest("[data-cond]"); if (!b) return; if (b.dataset.cond) $("cond").value = b.dataset.cond; $("trials").scrollIntoView({ behavior: "smooth" }); search(); });
 $("searchBtn").addEventListener("click", search);

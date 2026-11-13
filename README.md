@@ -8,8 +8,8 @@ Built for DSH Hacks V2 (AI × Healthcare). Educational demo only — not medical
 
 ## What it does
 
-1. **Medication gene card** — pick clopidogrel, warfarin or simvastatin and the genotype from a gene report. The card explains what the result means in plain words, what the CPIC guideline says, and how common the variant is across six ancestry groups.
-2. **Clinical trial navigator** — pick a condition, age, sex and city. The page queries ClinicalTrials.gov live for recruiting studies nearby, sorts them by distance, and explains the three key entry rules of each study in plain words.
+1. **Medication gene card** — pick one of 16 medicines across 8 genes (blood thinners, statins, acid-reflux drugs, antidepressants, anti-inflammatory painkillers, chemotherapy, immune suppressants and a transplant drug) and the genotype from a gene report. The card explains what the result means in plain words, quotes the CPIC guideline verbatim, and shows how common the variant is across six genetic-ancestry groups.
+2. **Clinical trial navigator** — pick one of 9 conditions plus age, sex and city. The page queries ClinicalTrials.gov live for recruiting studies, widens the search if nothing is nearby, sorts by distance, and explains the three key entry rules of each study in plain words.
 
 ## Run it
 
@@ -22,9 +22,12 @@ The live site is served by GitHub Pages from the `main` branch; every push updat
 | File | Purpose |
 |---|---|
 | `index.html` | The whole app (HTML, CSS, JavaScript) |
+| `pgx-data.js` | Generated gene, guideline and frequency data (never edited by hand) |
 | `snapshot.js` | Saved trial results, used by the "sample data" switch and as a fallback when offline |
 | `data/trials-snapshot.json` | The same snapshot as plain JSON |
-| `tools/make_snapshot.py` | Regenerates the snapshot: `python3 tools/make_snapshot.py` |
+| `tools/build_pgx_data.py` | Rebuilds `pgx-data.js` from the CPIC and All of Us APIs |
+| `tools/verify_frequencies.py` | Re-checks every frequency against All of Us |
+| `tools/make_snapshot.py` | Regenerates the trial snapshot |
 | `docs/pgx-frequency-data.md` | Source table for the allele frequencies hard-coded in the app |
 | `docs/one-pager.pdf` | One-page project summary (source: `docs/one-pager.html`) |
 | `docs/devpost-description.md` | Project story text for the Devpost page |
@@ -32,15 +35,14 @@ The live site is served by GitHub Pages from the `main` branch; every push updat
 
 ## Data sources
 
-- **Allele frequencies:** All of Us Research Program public Data Browser, aggregate data from about 535,000 participants, retrieved 2026-11-12.
-- **Prescribing guidance:** CPIC guidelines for CYP2C19/clopidogrel (2022), warfarin (2017) and statins (2022). The warfarin dose-need bands follow the genotype table in the FDA warfarin label. Recommendation wording was checked against the published CPIC tables on 2026-11-12.
+- **Allele frequencies:** All of Us Research Program public Data Browser (`public.api.researchallofus.org`), aggregate data from about 535,000 participants. No login is needed; only summary counts are used. Every number is re-checked by `tools/verify_frequencies.py`.
+- **Prescribing guidance:** the CPIC API (`api.cpicpgx.org`). Genotype, phenotype and recommendation text are pulled verbatim, so no guideline wording is written by hand. Warfarin is the one exception: it is dosed by algorithm, so its card follows the CYP2C9 x VKORC1 table in the FDA warfarin label.
 - **Trials:** ClinicalTrials.gov API v2, queried from the browser at search time.
 
 ## How AI was used
 
-- The app was built with AI coding assistants.
-- The one-sentence plain-language titles for the saved sample trials were drafted by AI in advance and reviewed by the author.
-- Plain-language notes on entry rules for live results come from a fixed glossary of medical terms in `index.html`, so the page makes no AI calls at run time and sends no user data to any model.
+- The app was designed and built with AI coding assistants, including the data pipeline that pulls and cross-checks both APIs.
+- Plain-language notes on trial entry rules come from a fixed glossary in `index.html`, and the clinical text is quoted from CPIC. The page makes **no AI calls at run time**, so nothing a user enters reaches a model and the output cannot hallucinate.
 
 ## Limits
 
