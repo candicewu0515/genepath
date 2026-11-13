@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenePath — from a gene report to two real decisions</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --ink: #14201d; --muted: #5a6b66; --line: #dde5e2;
+    --accent: #0b7a68; --accent-soft: #e2f3ef; --warn: #b4530a; --warn-soft: #fdf0e1;
+    --danger: #a8322d; --danger-soft: #fbe9e7; --ok: #1f7a3d; --ok-soft: #e6f4ea;
+    --bar: #9fc9c0; --bar-hi: #0b7a68;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  header.top { background: #0e2f29; color: #fff; padding: 28px 16px 24px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header.top .wrap { padding: 0; }
+  h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: -0.5px; }
+  h1 span { color: #7fe0cd; }
+  .tagline { margin: 0; color: #cfe6e0; max-width: 640px; }
+  .notice { background: var(--warn-soft); border-bottom: 1px solid #f0d5b0; color: #6b3606; font-size: 14px; padding: 9px 16px; }
+  .notice .wrap { padding: 0; }
+  nav.steps { display: flex; gap: 8px; margin: 20px 0 4px; flex-wrap: wrap; }
+  nav.steps a { text-decoration: none; color: var(--accent); background: var(--accent-soft); padding: 7px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; }
+  section.module { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 16px 0 24px; }
+  h2 { margin: 0 0 4px; font-size: 22px; }
+  .sub { margin: 0 0 16px; color: var(--muted); }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  select, input[type=number] { width: 100%; padding: 9px 10px; font: inherit; border: 1px solid #c4d1cd; border-radius: 8px; background: #fff; color: var(--ink); }
+  button { font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; padding: 9px 16px; }
+  button.ghost { background: #fff; color: var(--accent); }
+  button:disabled { opacity: .6; cursor: default; }
+  .pillrow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .pill { border: 1px solid #c4d1cd; background: #fff; color: var(--ink); border-radius: 999px; padding: 7px 14px; font-weight: 600; }
+  .pill[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .card-head { padding: 14px 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .card-head.ok { background: var(--ok-soft); } .card-head.warn { background: var(--warn-soft); } .card-head.danger { background: var(--danger-soft); }
+  .badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; color: #fff; }
+  .ok .badge { background: var(--ok); } .warn .badge { background: var(--warn); } .danger .badge { background: var(--danger); }
+  .card-head strong { font-size: 17px; }
+  .card-body { padding: 16px 18px; display: grid; gap: 14px; }
+  .card-body h3 { margin: 0 0 3px; font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .card-body p { margin: 0; }
+  .term { border-bottom: 1px dotted var(--muted); cursor: help; }
+  .glossline { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .chart { border-top: 1px solid var(--line); padding: 16px 18px; }
+  .chart h3 { margin: 0 0 2px; font-size: 16px; }
+  .chart .hint { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .bars { display: grid; gap: 7px; }
+  .bar { display: grid; grid-template-columns: 150px 1fr 120px; gap: 10px; align-items: center; font-size: 14px; }
+  .bar .track { background: #eef3f1; border-radius: 6px; height: 20px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--bar); border-radius: 6px; transition: width .35s; }
+  .bar.hi .fill { background: var(--bar-hi); } .bar.hi .name, .bar.hi .val { font-weight: 700; }
+  .bar .val small { color: var(--muted); font-weight: 400; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tabs button { background: #fff; color: var(--ink); border-color: #c4d1cd; padding: 5px 12px; font-size: 13px; }
+  .tabs button[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .source { font-size: 12px; color: var(--muted); padding: 10px 18px; background: #fafcfb; border-top: 1px solid var(--line); }
+  .source a, .trial a { color: var(--accent); }
+  .handoff { margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); font-weight: 600; margin: 0; }
+  .toggle input { width: 18px; height: 18px; }
+  .actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .status { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+  .status.err { color: var(--danger); }
+  .trial { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .trial h3 { margin: 0 0 2px; font-size: 17px; }
+  .trial .official { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip { font-size: 12px; font-weight: 600; background: var(--accent-soft); color: #0a5e50; padding: 3px 9px; border-radius: 999px; }
+  .chip.grey { background: #eef1f0; color: var(--muted); }
+  .trial details { margin-top: 8px; }
+  .trial summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  .crit { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .crit li { border-left: 3px solid var(--bar); padding-left: 10px; }
+  .crit .orig { font-size: 14px; }
+  .crit .plain { font-size: 14px; color: #0a5e50; background: var(--accent-soft); border-radius: 6px; padding: 4px 8px; margin-top: 4px; display: inline-block; }
+  .contact { font-size: 14px; margin-top: 10px; }
+  footer { color: var(--muted); font-size: 13px; padding: 4px 0 40px; }
+  @media (max-width: 560px) { .bar { grid-template-columns: 96px 1fr 92px; font-size: 13px; } h1 { font-size: 25px; } section.module { padding: 16px; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <h1>Gene<span>Path</span></h1>
+  <p class="tagline">From one pharmacogenomic report to two real decisions: <b>is my medication affected?</b> and <b>is there a clinical trial that fits me?</b></p>
+</div></header>
+<div class="notice"><div class="wrap"><b>Educational demo — not medical advice.</b> Never start, stop or change a medication based on this page; talk to your clinician or pharmacist. Nothing you enter here is stored or sent anywhere except the public ClinicalTrials.gov search.</div></div>
+
+<div class="wrap">
+  <nav class="steps"><a href="#med">1 · Medication gene card</a><a href="#trials">2 · Clinical trial navigator</a></nav>
+
+  <section class="module" id="med">
+    <div class="eyebrow">Step 1</div>
+    <h2>Medication gene card</h2>
+    <p class="sub">Pick a medication and the result written on your gene report. <i>Pharmacogenomics</i> means how your genes change the way your body handles a drug.</p>
+    <div class="pillrow" id="drugPills"></div>
+    <div class="controls" id="genoControls"></div>
+    <div class="card" id="medCard"></div>
+    <div class="handoff" id="handoff"></div>
+  </section>
+
+  <section class="module" id="trials">
+    <div class="eyebrow">Step 2</div>
+    <h2>Clinical trial navigator</h2>
+    <p class="sub">Find studies that are recruiting right now near you, with the key entry rules explained in plain words. Live data from ClinicalTrials.gov.</p>
+    <div class="controls">
+      <div><label for="cond">Condition</label><select id="cond"></select></div>
+      <div><label for="age">Age</label><input id="age" type="number" min="0" max="110" value="68"></div>
+      <div><label for="sex">Sex</label><select id="sex"><option value="ALL">Any / prefer not to say</option><option value="FEMALE">Female</option><option value="MALE">Male</option></select></div>
+      <div><label for="city">Near</label><select id="city"></select></div>
+      <div><label for="radius">Within</label><select id="radius"><option>50</option><option selected>150</option><option>300</option></select></div>
+    </div>
+    <div class="actions">
+      <button id="searchBtn">Find recruiting trials</button>
+      <label class="toggle"><input type="checkbox" id="sampleToggle"> Use saved sample data (works offline)</label>
+    </div>
+    <p class="status" id="trialStatus">Choose a condition and press the button.</p>
+    <div id="trialList"></div>
+  </section>
+
+  <footer>
+    <p><b>Data sources.</b> Allele frequencies: All of Us Research Program public Data Browser (aggregate data, retrieved Nov 2026). Prescribing guidance: CPIC guidelines (cpicpgx.org). Trials: ClinicalTrials.gov API v2, queried live from your browser.</p>
+    <p><b>Limits.</b> Frequencies describe populations, not individuals. Guideline summaries are simplified and apply to specific clinical situations. Trial listings may change daily; only the study team can confirm whether you qualify. Plain-language notes are simplified explanations of medical terms, not eligibility decisions.</p>
+  </footer>
+</div>
+
+<script src="snapshot.js"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------------- Module 1: medication gene card ---------------- */
+const GROUPS = [["AFR", "African"], ["EUR", "European"], ["AMR", "Latino / Admixed American"], ["EAS", "East Asian"], ["SAS", "South Asian"], ["MID", "Middle Eastern"]];
+const SHORT = { AFR: "African", EUR: "European", AMR: "Latino / Adm. American", EAS: "East Asian", SAS: "South Asian", MID: "Middle Eastern" };
+
+// Allele frequencies (%), All of Us public Data Browser, retrieved 2026-11-12. ~1.07M alleles per site.
+const VARIANTS = {
+  c19s2: { label: "CYP2C19*2", rs: "rs4244285", effect: "no-function version of the gene (clopidogrel works less well)", overall: 15.3, f: { AFR: 17.9, EUR: 14.6, AMR: 11.8, EAS: 30.9, SAS: 34.4, MID: 10.0 } },
+  c19s17: { label: "CYP2C19*17", rs: "rs12248560", effect: "increased-function version of the gene (faster activation)", overall: 19.6, f: { AFR: 22.2, EUR: 22.0, AMR: 12.5, EAS: 1.0, SAS: 17.1, MID: 20.4 } },
+  c9s2: { label: "CYP2C9*2", rs: "rs1799853", effect: "slower warfarin breakdown", overall: 9.6, f: { AFR: 2.1, EUR: 12.9, AMR: 8.5, EAS: 0.1, SAS: 4.5, MID: 11.9 } },
+  c9s3: { label: "CYP2C9*3", rs: "rs1057910", effect: "much slower warfarin breakdown", overall: 5.2, f: { AFR: 1.2, EUR: 6.7, AMR: 4.4, EAS: 3.2, SAS: 10.6, MID: 7.1 } },
+  vk: { label: "VKORC1 −1639A", rs: "rs9923231", effect: "more sensitive to warfarin (lower dose needed)", overall: 35.2, f: { AFR: 9.4, EUR: 38.6, AMR: 42.6, EAS: 87.4, SAS: 17.1, MID: 50.5 } },
+  slco5: { label: "SLCO1B1*5", rs: "rs4149056", effect: "reduced liver uptake of statins (higher muscle side-effect risk)", overall: 12.6, f: { AFR: 2.8, EUR: 16.0, AMR: 12.1, EAS: 12.7, SAS: 4.8, MID: 20.8 } },
+};
+
+const CLOPI_ALT = "For people with acute coronary syndrome or a stent (PCI), the CPIC guideline recommends avoiding clopidogrel when possible and using prasugrel or ticagrelor instead, if there is no reason not to.";
+const DRUGS = {
+  clopidogrel: {
+    name: "Clopidogrel", brand: "Plavix", use: "a blood thinner that stops platelets from clumping, used after stents, heart attacks and some strokes",
+    gene: "CYP2C19", variants: ["c19s2", "c19s17"], condition: "afib",
+    guideline: "CPIC Guideline for CYP2C19 and Clopidogrel (2022 update)", url: "https://cpicpgx.org/guidelines/guideline-for-clopidogrel-and-cyp2c19/",
+    selects: [{ id: "g", label: "CYP2C19 result on your report", options: [
+      ["*1/*1", "*1/*1 — normal metabolizer"], ["*1/*2", "*1/*2 — intermediate metabolizer"], ["*2/*2", "*2/*2 — poor metabolizer"],
+      ["*1/*17", "*1/*17 — rapid metabolizer"], ["*17/*17", "*17/*17 — ultrarapid metabolizer"], ["*2/*17", "*2/*17 — intermediate metabolizer"]] }],
+    result(v) {
+      const R = {
+        "*1/*1": ["ok", "Normal metabolizer", "Your liver enzyme CYP2C19 works as expected. Clopidogrel is a “prodrug”: it only works after this enzyme switches it on, and yours does that normally.", "Standard clopidogrel dosing is expected to work as intended. No genetics-based change is suggested by CPIC."],
+        "*1/*2": ["warn", "Intermediate metabolizer", "One of your two CYP2C19 gene copies does not work. Your body switches on less clopidogrel than usual, so the drug may protect you less well against clots.", CLOPI_ALT + " Worth raising with your cardiologist or pharmacist."],
+        "*2/*2": ["danger", "Poor metabolizer", "Neither of your CYP2C19 gene copies works. Your body switches on very little clopidogrel, so the drug may give you much weaker protection against clots.", CLOPI_ALT + " This is CPIC’s strongest recommendation for this drug — bring this result to your prescriber."],
+        "*1/*17": ["ok", "Rapid metabolizer", "One of your CYP2C19 gene copies is extra active. Your body switches on clopidogrel at least as well as usual.", "Standard clopidogrel dosing is expected to work. No genetics-based change is suggested by CPIC."],
+        "*17/*17": ["ok", "Ultrarapid metabolizer", "Both of your CYP2C19 gene copies are extra active. Your body switches on clopidogrel very efficiently.", "Standard clopidogrel dosing is expected to work. No genetics-based change is suggested by CPIC."],
+        "*2/*17": ["warn", "Intermediate metabolizer", "You carry one non-working copy (*2) and one extra-active copy (*17). The extra-active copy does not fully make up for the non-working one, so this is treated as reduced function.", CLOPI_ALT + " Worth raising with your cardiologist or pharmacist."],
+      }[v.g];
+      return { level: R[0], title: R[1], meaning: R[2], action: R[3], focus: v.g.includes("*17") && !v.g.includes("*2") ? "c19s17" : "c19s2" };
+    },
+  },
+  warfarin: {
+    name: "Warfarin", brand: "Coumadin", use: "a blood thinner used for atrial fibrillation, clots and mechanical heart valves; the right dose differs a lot between people",
+    gene: "CYP2C9 + VKORC1", variants: ["vk", "c9s2", "c9s3"], condition: "afib",
+    guideline: "CPIC Guideline for Pharmacogenetics-Guided Warfarin Dosing (2017 update)", url: "https://cpicpgx.org/guidelines/guideline-for-warfarin-and-cyp2c9-and-vkorc1/",
+    selects: [
+      { id: "c9", label: "CYP2C9 result", options: [["*1/*1", "*1/*1 — normal"], ["*1/*2", "*1/*2 — mildly reduced"], ["*1/*3", "*1/*3 — reduced"], ["*2/*2", "*2/*2 — reduced"], ["*2/*3", "*2/*3 — strongly reduced"], ["*3/*3", "*3/*3 — strongly reduced"]] },
+      { id: "vk", label: "VKORC1 −1639 result", options: [["GG", "G/G — typical sensitivity"], ["AG", "A/G — more sensitive"], ["AA", "A/A — most sensitive"]] }],
+    result(v) {
+      // Dose-need band (0 typical, 1 lower, 2 much lower), following the genotype table in the FDA warfarin label.
+      const band = { GG: [0, 0, 1, 1, 1, 2], AG: [0, 1, 1, 1, 2, 2], AA: [1, 1, 2, 2, 2, 2] }[v.vk][["*1/*1", "*1/*2", "*1/*3", "*2/*2", "*2/*3", "*3/*3"].indexOf(v.c9)];
+      const c9txt = v.c9 === "*1/*1" ? "Your CYP2C9 enzyme clears warfarin at the usual speed." : "Your CYP2C9 enzyme clears warfarin more slowly than usual, so the drug stays in your body longer.";
+      const vktxt = v.vk === "GG" ? "Your VKORC1 result means typical sensitivity to warfarin." : v.vk === "AG" ? "Your VKORC1 result means you are somewhat more sensitive to warfarin." : "Your VKORC1 result means you are highly sensitive to warfarin.";
+      const T = [["ok", "Typical dose need expected"], ["warn", "Lower dose need likely"], ["danger", "Much lower dose need likely"]][band];
+      const act = ["Your genes do not point to an unusual dose. Dosing is still individual and guided by regular INR blood tests.",
+        "People with this combination usually end up on a lower-than-average dose. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, alongside INR blood tests.",
+        "People with this combination usually need a much lower dose and can take longer to reach a stable level. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, with close INR monitoring."][band];
+      return { level: T[0], title: T[1], meaning: c9txt + " " + vktxt, action: act + " Note: for people of African ancestry, CPIC advises also testing additional CYP2C9 variants (*5, *6, *8, *11) that this simple card does not cover.",
+        focus: v.vk !== "GG" ? "vk" : v.c9.includes("*3") ? "c9s3" : v.c9.includes("*2") ? "c9s2" : "vk" };
+    },
+  },
+  simvastatin: {
+    name: "Simvastatin", brand: "Zocor", use: "a statin that lowers cholesterol; its best-known side effect is muscle pain or, rarely, muscle damage",
+    gene: "SLCO1B1", variants: ["slco5"], condition: null,
+    guideline: "CPIC Guideline for SLCO1B1, ABCG2, CYP2C9 and Statin-Associated Musculoskeletal Symptoms (2022)", url: "https://cpicpgx.org/guidelines/cpic-guideline-for-statins/",
+    selects: [{ id: "g", label: "SLCO1B1 result on your report", options: [["TT", "*1/*1 (T/T) — normal function"], ["TC", "*1/*5 (T/C) — decreased function"], ["CC", "*5/*5 (C/C) — poor function"]] }],
+    result(v) {
+      const R = {
+        TT: ["ok", "Normal function", "SLCO1B1 makes a transporter that pulls statins out of the blood into the liver. Yours works normally, so simvastatin levels in your blood are expected to be typical.", "No genetics-based change is suggested by CPIC. Usual statin choice and dose apply."],
+        TC: ["warn", "Decreased function", "One of your two SLCO1B1 gene copies works less well. More simvastatin stays in your bloodstream, which raises the chance of muscle pain or muscle injury.", "CPIC recommends that prescribers consider a different statin (for example rosuvastatin or pravastatin), or keep simvastatin at a low dose if it is needed. Report new muscle pain to your clinician."],
+        CC: ["danger", "Poor function", "Both of your SLCO1B1 gene copies work poorly. Simvastatin builds up in your bloodstream much more than usual, with a clearly higher risk of muscle injury.", "CPIC recommends that prescribers choose a different statin rather than simvastatin. Bring this result to your prescriber; do not stop a statin on your own."],
+      }[v.g];
+      return { level: R[0], title: R[1], meaning: R[2], action: R[3], focus: "slco5" };
+    },
+  },
+};
+
+const med = { drug: "clopidogrel", values: {}, variant: null };
+
+function renderDrugPills() {
+  $("drugPills").innerHTML = Object.entries(DRUGS).map(([k, d]) => `<button class="pill" data-drug="${k}" aria-pressed="${k === med.drug}">${d.name}</button>`).join("");
+}
+function renderGenoControls() {
+  const d = DRUGS[med.drug];
+  med.values = {};
+  $("genoControls").innerHTML = d.selects.map((s) => {
+    med.values[s.id] = s.options[med.drug === "clopidogrel" ? 2 : 0][0];
+    return `<div><label for="sel_${s.id}">${esc(s.label)}</label><select id="sel_${s.id}" data-sel="${s.id}">${s.options.map(([v, t]) => `<option value="${esc(v)}" ${v === med.values[s.id] ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>`;
+  }).join("");
+}
+function carrierPct(p) { const q = p / 100; return (1 - (1 - q) * (1 - q)) * 100; }
+function renderMedCard(resetVariant) {
+  const d = DRUGS[med.drug], r = d.result(med.values);
+  if (resetVariant || !d.variants.includes(med.variant)) med.variant = r.focus;
+  const v = VARIANTS[med.variant];
+  const max = Math.max(...Object.values(v.f), v.overall);
+  const top = Object.entries(v.f).sort((a, b) => b[1] - a[1])[0][0];
+  const bars = GROUPS.map(([k]) => `<div class="bar ${k === top ? "hi" : ""}"><div class="name">${SHORT[k]}</div><div class="track"><div class="fill" style="width:${(v.f[k] / max * 100).toFixed(1)}%"></div></div><div class="val">${v.f[k].toFixed(1)}% <small>· ~${carrierPct(v.f[k]).toFixed(0)}% carry</small></div></div>`).join("")
+    + `<div class="bar"><div class="name"><i>All participants</i></div><div class="track"><div class="fill" style="width:${(v.overall / max * 100).toFixed(1)}%;background:#c9d3d0"></div></div><div class="val">${v.overall.toFixed(1)}%</div></div>`;
+  const tabs = d.variants.length > 1 ? `<div class="tabs">${d.variants.map((k) => `<button data-variant="${k}" aria-pressed="${k === med.variant}">${VARIANTS[k].label}</button>`).join("")}</div>` : "";
+  $("medCard").innerHTML = `
+    <div class="card-head ${r.level}"><span class="badge">${esc(d.gene)}</span><strong>${esc(d.name)} · ${esc(r.title)}</strong></div>
+    <div class="card-body">
+      <div><h3>What this means</h3><p>${esc(r.meaning)}</p><p class="glossline">${esc(d.name)} (${esc(d.brand)}) is ${esc(d.use)}.</p></div>
+      <div><h3>What the guideline says</h3><p>${esc(r.action)}</p><p class="glossline">This is guideline information for a conversation with your clinician, not a personal recommendation.</p></div>
+    </div>
+    <div class="chart">
+      <h3>How common is this variant around the world?</h3>
+      <p class="hint"><b>${esc(v.label)}</b> (${esc(v.rs)}) — ${esc(v.effect)}. Bars show <b>allele frequency</b>: the share of gene copies carrying the variant, not the share of people. “~% carry” is the estimated share of people with at least one copy (Hardy–Weinberg estimate).</p>
+      ${tabs}<div class="bars">${bars}</div>
+    </div>
+    <div class="source">Frequencies: All of Us Research Program public Data Browser, aggregate data from ~535,000 participants, retrieved Nov 2026 · Guidance: <a href="${d.url}" target="_blank" rel="noopener">${esc(d.guideline)}</a></div>`;
+  const c = CONDITIONS.find((x) => x.key === d.condition);
+  $("handoff").innerHTML = `<span>Next question: is there a study recruiting people like me?</span><button class="ghost" id="handoffBtn" data-cond="${c ? c.key : ""}">${c ? "See recruiting " + esc(c.label.toLowerCase()) + " trials" : "Explore recruiting trials"} →</button>`;
+}
+
+/* ---------------- Module 2: clinical trial navigator ---------------- */
+const CONDITIONS = [
+  { key: "afib", label: "Atrial fibrillation", term: "atrial fibrillation" },
+  { key: "alzheimers", label: "Alzheimer’s disease", term: "Alzheimer disease" },
+  { key: "t2d", label: "Type 2 diabetes", term: "type 2 diabetes" },
+  { key: "crc", label: "Colorectal cancer", term: "colorectal cancer" },
+];
+const CITIES = [["Iowa City, IA", 41.6611, -91.5302], ["Chicago, IL", 41.8781, -87.6298], ["Minneapolis, MN", 44.9778, -93.265], ["St. Louis, MO", 38.627, -90.1994],
+  ["New York, NY", 40.7128, -74.006], ["Boston, MA", 42.3601, -71.0589], ["Philadelphia, PA", 39.9526, -75.1652], ["Washington, DC", 38.9072, -77.0369],
+  ["Atlanta, GA", 33.749, -84.388], ["Miami, FL", 25.7617, -80.1918], ["Houston, TX", 29.7604, -95.3698], ["Dallas, TX", 32.7767, -96.797],
+  ["Denver, CO", 39.7392, -104.9903], ["Phoenix, AZ", 33.4484, -112.074], ["Los Angeles, CA", 34.0522, -118.2437], ["San Francisco, CA", 37.7749, -122.4194], ["Seattle, WA", 47.6062, -122.3321]];
+const FIELDS = "NCTId,BriefTitle,OverallStatus,BriefSummary,EligibilityCriteria,MinimumAge,MaximumAge,Sex,Phase,StudyType,CentralContactName,CentralContactPhone,CentralContactEMail,LocationFacility,LocationCity,LocationState,LocationCountry,LocationGeoPoint,LocationStatus";
+
+// One-sentence plain-language summaries for the saved sample trials (AI-drafted in advance, reviewed by the author).
+const PLAIN_TITLES = {
+  NCT04088071: "A registry that follows people having a catheter ablation for an irregular heartbeat, to see how safe and effective it is in everyday care.",
+  NCT07575269: "Tests a new catheter system that maps the heart and treats atrial fibrillation with short electrical pulses.",
+  NCT06324201: "Follows people treated with a specific ablation catheter to check long-term safety and results for on-and-off atrial fibrillation.",
+  NCT07227532: "Checks the long-term safety and results of a pulsed-field ablation catheter for on-and-off atrial fibrillation.",
+  NCT05963698: "Compares closing off a small pouch in the heart (where clots form) against staying on blood thinners to prevent stroke.",
+  NCT05712200: "Tests a monthly injected blood thinner for older adults with atrial fibrillation who cannot take the usual blood-thinner pills.",
+  NCT06230783: "Studies whether changes in the way people speak can reveal early signs of Alzheimer’s disease.",
+  NCT07602582: "A follow-on study of the Alzheimer’s drug donanemab for people who already finished an earlier donanemab trial.",
+  NCT07413744: "An early study of whether changing gut bacteria could affect memory and Alzheimer’s disease.",
+  NCT03954899: "Tests whether a nightly 5 mg melatonin tablet can help protect memory and brain health in older adults.",
+  NCT07032350: "Tests an app that helps family caregivers manage pain in a relative living with dementia.",
+  NCT07812337: "Tests a tool that helps primary-care doctors and older adults decide about blood tests for Alzheimer’s disease.",
+  NCT07817251: "Looks at how well people with type 2 diabetes tolerate switching from semaglutide to a newer combination injection.",
+  NCT07684144: "A long-term follow-on study of a monthly weight and blood-sugar injection, for people who finished the earlier trial.",
+  NCT07392190: "Tests an add-on weekly injection for people who still have obesity while already on a GLP-1-type medicine.",
+  NCT07282613: "Tests whether a weekly combination injection lowers blood sugar and weight in children and teens with type 2 diabetes.",
+  NCT07784270: "Tests a new injectable medicine for adults with type 2 diabetes who also have overweight or obesity.",
+  NCT07662213: "Compares a new once-daily diabetes pill with semaglutide in adults with type 2 diabetes.",
+  NCT07221357: "Compares a new antibody plus chemotherapy with the standard antibody plus chemotherapy as first treatment for advanced colorectal cancer.",
+  NCT05919264: "An early study of a new targeted drug for advanced cancers, including colorectal cancer, with specific gene changes.",
+  NCT03947385: "An early study of a targeted drug for solid tumors that carry particular gene changes.",
+  NCT07020117: "An early study of a radioactive drug that seeks out and treats advanced solid tumors.",
+  NCT06750094: "Compares a newer antibody with standard antibodies, each with chemotherapy, for advanced colorectal cancer without certain gene mutations.",
+  NCT05592626: "An early study of an immune-activating antibody drug for advanced solid tumors.",
+};
+
+// Rule-based plain-language notes: [pattern, explanation]. First two matches are shown.
+const GLOSSARY = [
+  [/informed consent|capable of providing (written )?consent|consent form|\bICF\b/i, "You must understand what the study involves and agree in writing to take part."],
+  [/assent/i, "A child also has to agree to take part, in addition to a parent’s permission."],
+  [/paroxysmal|\bPAF\b/i, "“Paroxysmal” means the irregular heartbeat comes and goes on its own."],
+  [/persistent (atrial|AF)|\bPsAF\b/i, "“Persistent” means the irregular heartbeat lasts more than a week without stopping by itself."],
+  [/refractory|not tolerated|inadequately (managed|controlled)/i, "The usual treatment has not worked well enough for you, or you could not tolerate it."],
+  [/ablation/i, "Ablation is a procedure that uses a thin tube in the heart to stop the faulty electrical signals."],
+  [/CHA2DS2[- ]?VASc/i, "CHA₂DS₂-VASc is a stroke-risk score based on age and conditions such as high blood pressure, diabetes and past stroke."],
+  [/anticoagula/i, "Anticoagulants are blood thinners (for example warfarin or apixaban)."],
+  [/antiarrhythmic|\bAAD\b/i, "Antiarrhythmic drugs are medicines that keep the heart rhythm steady."],
+  [/\bECOG\b/i, "ECOG 0–1 means you are up and about and able to do light daily activities."],
+  [/RECIST|measurable (disease|tumor|lesion)/i, "At least one tumor must be visible and measurable on a scan, so doctors can track whether it shrinks."],
+  [/metasta|locally advanced|unresectable|not amenable to curative surgery/i, "The cancer has spread or cannot be completely removed with surgery."],
+  [/histologic|cytologic/i, "The diagnosis must be confirmed by looking at a tissue sample under a microscope."],
+  [/dMMR|MSI-H|microsatellite/i, "dMMR / MSI-H is a tumor test result that affects which treatments work; this study needs a specific result."],
+  [/\bBRAF\b|\bKRAS\b|\bNRAS\b|mutation|fusion|wild-type/i, "Your tumor needs to have been tested for specific gene changes; the study accepts only certain results."],
+  [/tumor tissue|archival/i, "You agree to let the study use a sample of your tumor (new or previously stored)."],
+  [/organ and marrow function/i, "Blood tests must show your liver, kidneys and bone marrow are working well enough."],
+  [/HbA1c|A1c/i, "HbA1c is a blood test showing your average blood sugar over about three months."],
+  [/\bBMI\b|kg\/m2|obesity|overweight/i, "BMI is a weight-for-height measure; the study sets a minimum value."],
+  [/incretin|semaglutide|GLP-1/i, "Incretin medicines are drugs like semaglutide or tirzepatide that lower blood sugar and weight."],
+  [/T2DM|type 2 diabetes/i, "You need a confirmed type 2 diabetes diagnosis, usually for a minimum length of time."],
+  [/\bMCI\b|mild cognitive impairment/i, "Mild cognitive impairment means memory or thinking problems that are noticeable but do not stop daily life."],
+  [/cognitively unimpaired/i, "“Cognitively unimpaired” means no memory or thinking problems on testing."],
+  [/MoCA|Montreal Cognitive|clinical dementia rating|\bCDR\b|MMSE/i, "These are short memory and thinking tests; the study needs your score in a set range."],
+  [/study partner|caregiver/i, "Someone who knows you well (a relative or friend) must take part with you."],
+  [/childbearing/i, "There are rules about pregnancy and birth control during the study."],
+  [/completed (study|the week)|enrolled in the/i, "This study is only open to people who already took part in a specific earlier study."],
+  [/stroke|systemic embolism/i, "A history of stroke or a clot that travelled elsewhere in the body is relevant here."],
+  [/(\d+)\s*(years|yrs)|years of age|\bage[sd]?\b/i, "There is an age requirement — check it against your own age."],
+];
+function plainNote(text) {
+  const hits = GLOSSARY.filter(([re]) => re.test(text)).map(([, t]) => t).slice(0, 2);
+  return hits.length ? hits.join(" ") : "Ask the study team what this rule means for you — their contact details are below.";
+}
+function miles(aLat, aLon, bLat, bLon) {
+  const r = 3958.8, t = Math.PI / 180, dp = (bLat - aLat) * t, dl = (bLon - aLon) * t;
+  const h = Math.sin(dp / 2) ** 2 + Math.cos(aLat * t) * Math.cos(bLat * t) * Math.sin(dl / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+const years = (s) => { const m = /(\d+)\s*(Year|Month|Week|Day)/i.exec(s || ""); if (!m) return null; const n = +m[1]; return /year/i.test(m[2]) ? n : /month/i.test(m[2]) ? n / 12 : 0; };
+const clean = (s) => String(s || "").replace(/\\([<>\[\]&*_])/g, "$1").replace(/\s+/g, " ").trim();
+
+function keyCriteria(text) {
+  const inc = String(text || "").split(/exclusion criteria/i)[0];
+  const bullets = (inc.match(/^\s*(?:\*|-|\d+\.)\s+.+$/gm) || []).map((b) => clean(b.replace(/^\s*(?:\*|-|\d+\.)\s+/, ""))).filter((b) => b.length > 12);
+  const boiler = /informed consent|consent form|willing and (able|capable)|able and willing/i;
+  const ranked = [...bullets.filter((b) => !boiler.test(b)), ...bullets.filter((b) => boiler.test(b))];
+  return ranked.slice(0, 3).map((b) => (b.length > 260 ? b.slice(0, 257).replace(/\s\S*$/, "") + "…" : b));
+}
+function normalize(study, origin) {
+  const p = study.protocolSection || {}, e = p.eligibilityModule || {}, cl = p.contactsLocationsModule || {};
+  const locs = (cl.locations || []).filter((l) => l.geoPoint && (!l.country || l.country === "United States"))
+    .map((l) => ({ name: l.facility, city: l.city, state: l.state, status: l.status, dist: miles(origin.lat, origin.lon, l.geoPoint.lat, l.geoPoint.lon) }))
+    .sort((a, b) => a.dist - b.dist);
+  const id = p.identificationModule?.nctId;
+  return { id, title: clean(p.identificationModule?.briefTitle), status: p.statusModule?.overallStatus, summary: clean(p.descriptionModule?.briefSummary),
+    type: p.designModule?.studyType, phases: (p.designModule?.phases || []).filter((x) => x !== "NA"),
+    minAge: years(e.minimumAge), maxAge: years(e.maximumAge), minAgeTxt: e.minimumAge, maxAgeTxt: e.maximumAge, sex: e.sex || "ALL",
+    criteria: keyCriteria(e.eligibilityCriteria), locs, contact: (cl.centralContacts || [])[0], plain: PLAIN_TITLES[id] };
+}
+function firstSentence(s) { const m = /^(.{40,220}?[.!?])(\s|$)/.exec(s || ""); return m ? m[1] : (s || "").slice(0, 200); }
+
+function renderTrials(list, origin, note, isErr) {
+  const age = +$("age").value || null, sex = $("sex").value;
+  const fits = list.filter((t) => (age == null || ((t.minAge == null || age >= t.minAge) && (t.maxAge == null || age <= t.maxAge))) && (sex === "ALL" || t.sex === "ALL" || t.sex === sex));
+  fits.sort((a, b) => (a.locs[0]?.dist ?? 1e9) - (b.locs[0]?.dist ?? 1e9));
+  const shown = fits.slice(0, 8);
+  $("trialStatus").className = "status" + (isErr ? " err" : "");
+  $("trialStatus").textContent = `${note} Showing ${shown.length} of ${list.length} recruiting studies that match age ${age ?? "any"}${sex === "ALL" ? "" : " and sex " + sex.toLowerCase()}, nearest first.`;
+  $("trialList").innerHTML = shown.map((t, i) => {
+    const near = t.locs[0];
+    const ageTxt = `${t.minAgeTxt || "No minimum"}${t.maxAgeTxt ? " – " + t.maxAgeTxt : " and older"}`;
+    const c = t.contact;
+    const contact = c ? `${esc(c.name || "Study contact")}${c.phone ? " · " + esc(c.phone) : ""}${c.email ? ` · <a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}` : "See the study page for site contacts";
+    return `<article class="trial">
+      <h3>${esc(t.plain || firstSentence(t.summary))}</h3>
+      <p class="official">Official title: ${esc(t.title)} · <a href="https://clinicaltrials.gov/study/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.id)}</a></p>
+      <div class="chips"><span class="chip">${t.status === "RECRUITING" ? "Recruiting now" : esc(t.status)}</span>
+        ${near ? `<span class="chip">${esc(near.city)}, ${esc(near.state)} · ${Math.round(near.dist)} mi from ${esc(origin.label)}</span>` : `<span class="chip grey">Location not listed</span>`}
+        <span class="chip grey">Ages: ${esc(ageTxt)}</span>
+        <span class="chip grey">${t.type === "OBSERVATIONAL" ? "Observational (no experimental treatment)" : "Tests a treatment" + (t.phases.length ? " · " + esc(t.phases.join("/").replace(/PHASE/g, "Phase ")) : "")}</span></div>
+      <details ${i === 0 ? "open" : ""}><summary>Key entry rules, in plain words</summary>
+        <ul class="crit">${t.criteria.map((k) => `<li><div class="orig">“${esc(k)}”</div><div class="plain">In plain words: ${esc(plainNote(k))}</div></li>`).join("") || "<li>No criteria listed.</li>"}</ul>
+        ${t.locs.length > 1 ? `<p class="contact"><b>Other nearby sites:</b> ${t.locs.slice(1, 4).map((l) => `${esc(l.city)}, ${esc(l.state)} (${Math.round(l.dist)} mi)`).join(" · ")}</p>` : ""}
+        <p class="contact"><b>Contact:</b> ${contact}</p>
+      </details></article>`;
+  }).join("") || `<p class="status">No recruiting studies matched. Try a wider distance or a different age.</p>`;
+}
+
+function showSample(note, isErr) {
+  const snap = window.TRIAL_SNAPSHOT;
+  if (!snap) { $("trialStatus").className = "status err"; $("trialStatus").textContent = "Sample data file (snapshot.js) is missing."; return; }
+  const list = (snap.conditions[$("cond").value] || []).map((s) => normalize(s, snap.origin));
+  renderTrials(list, snap.origin, `${note} Sample data saved ${snap.fetchedAt} for ${snap.origin.label} (within ${snap.radiusMiles} miles).`, isErr);
+}
+async function search() {
+  if ($("sampleToggle").checked) return showSample("", false);
+  const cond = CONDITIONS.find((c) => c.key === $("cond").value);
+  const [label, lat, lon] = CITIES[+$("city").value];
+  const origin = { label, lat, lon }, radius = $("radius").value;
+  const url = "https://clinicaltrials.gov/api/v2/studies?" + new URLSearchParams({ "query.cond": cond.term, "filter.overallStatus": "RECRUITING", "filter.geo": `distance(${lat},${lon},${radius}mi)`, pageSize: "30", fields: FIELDS });
+  $("searchBtn").disabled = true; $("trialStatus").className = "status"; $("trialStatus").textContent = "Searching ClinicalTrials.gov…"; $("trialList").innerHTML = "";
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    renderTrials((data.studies || []).map((s) => normalize(s, origin)), origin, `Live from ClinicalTrials.gov, within ${radius} miles of ${label}.`, false);
+  } catch (err) {
+    showSample("Could not reach ClinicalTrials.gov, so this is saved sample data instead.", true);
+  } finally { $("searchBtn").disabled = false; }
+}
+
+/* ---------------- wiring ---------------- */
+$("cond").innerHTML = CONDITIONS.map((c) => `<option value="${c.key}">${c.label}</option>`).join("");
+$("city").innerHTML = CITIES.map((c, i) => `<option value="${i}">${c[0]}</option>`).join("");
+$("radius").innerHTML = [50, 150, 300].map((r) => `<option value="${r}" ${r === 150 ? "selected" : ""}>${r} miles</option>`).join("");
+renderDrugPills(); renderGenoControls(); renderMedCard(true);
+
+$("drugPills").addEventListener("click", (e) => { const b = e.target.closest("[data-drug]"); if (!b) return; med.drug = b.dataset.drug; renderDrugPills(); renderGenoControls(); renderMedCard(true); });
+$("genoControls").addEventListener("change", (e) => { const s = e.target.closest("[data-sel]"); if (!s) return; med.values[s.dataset.sel] = s.value; renderMedCard(true); });
+$("medCard").addEventListener("click", (e) => { const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
+$("handoff").addEventListener("click", (e) => { const b = e.target.closest("[data-cond]"); if (!b) return; if (b.dataset.cond) $("cond").value = b.dataset.cond; $("trials").scrollIntoView({ behavior: "smooth" }); search(); });
+$("searchBtn").addEventListener("click", search);
+$("sampleToggle").addEventListener("change", () => { $("city").disabled = $("radius").disabled = $("sampleToggle").checked; search(); });
+</script>
+</body>
+</html>
