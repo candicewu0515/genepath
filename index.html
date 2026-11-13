@@ -162,11 +162,11 @@ const DRUGS = {
     result(v) {
       const R = {
         "*1/*1": ["ok", "Normal metabolizer", "Your liver enzyme CYP2C19 works as expected. Clopidogrel is a “prodrug”: it only works after this enzyme switches it on, and yours does that normally.", "Standard clopidogrel dosing is expected to work as intended. No genetics-based change is suggested by CPIC."],
-        "*1/*2": ["warn", "Intermediate metabolizer", "One of your two CYP2C19 gene copies does not work. Your body switches on less clopidogrel than usual, so the drug may protect you less well against clots.", CLOPI_ALT + " Worth raising with your cardiologist or pharmacist."],
-        "*2/*2": ["danger", "Poor metabolizer", "Neither of your CYP2C19 gene copies works. Your body switches on very little clopidogrel, so the drug may give you much weaker protection against clots.", CLOPI_ALT + " This is CPIC’s strongest recommendation for this drug — bring this result to your prescriber."],
+        "*1/*2": ["warn", "Intermediate metabolizer", "One of your two CYP2C19 gene copies does not work. Your body switches on less clopidogrel than usual, so the drug may protect you less well against clots.", CLOPI_ALT + " CPIC rates this recommendation as strong. Worth raising with your cardiologist or pharmacist."],
+        "*2/*2": ["danger", "Poor metabolizer", "Neither of your CYP2C19 gene copies works. Your body switches on very little clopidogrel, so the drug may give you much weaker protection against clots.", CLOPI_ALT + " CPIC rates this recommendation as strong — bring this result to your prescriber."],
         "*1/*17": ["ok", "Rapid metabolizer", "One of your CYP2C19 gene copies is extra active. Your body switches on clopidogrel at least as well as usual.", "Standard clopidogrel dosing is expected to work. No genetics-based change is suggested by CPIC."],
         "*17/*17": ["ok", "Ultrarapid metabolizer", "Both of your CYP2C19 gene copies are extra active. Your body switches on clopidogrel very efficiently.", "Standard clopidogrel dosing is expected to work. No genetics-based change is suggested by CPIC."],
-        "*2/*17": ["warn", "Intermediate metabolizer", "You carry one non-working copy (*2) and one extra-active copy (*17). The extra-active copy does not fully make up for the non-working one, so this is treated as reduced function.", CLOPI_ALT + " Worth raising with your cardiologist or pharmacist."],
+        "*2/*17": ["warn", "Intermediate metabolizer", "You carry one non-working copy (*2) and one extra-active copy (*17). The extra-active copy does not fully make up for the non-working one, so this is treated as reduced function.", CLOPI_ALT + " CPIC rates this recommendation as strong. Worth raising with your cardiologist or pharmacist."],
       }[v.g];
       return { level: R[0], title: R[1], meaning: R[2], action: R[3], focus: v.g.includes("*17") && !v.g.includes("*2") ? "c19s17" : "c19s2" };
     },
@@ -187,7 +187,8 @@ const DRUGS = {
       const act = ["Your genes do not point to an unusual dose. Dosing is still individual and guided by regular INR blood tests.",
         "People with this combination usually end up on a lower-than-average dose. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, alongside INR blood tests.",
         "People with this combination usually need a much lower dose and can take longer to reach a stable level. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, with close INR monitoring."][band];
-      return { level: T[0], title: T[1], meaning: c9txt + " " + vktxt, action: act + " Note: for people of African ancestry, CPIC advises also testing additional CYP2C9 variants (*5, *6, *8, *11) that this simple card does not cover.",
+      const alt = v.c9 === "*2/*3" || v.c9 === "*3/*3" ? " For this CYP2C9 result, CPIC also notes that a different oral blood thinner might be considered." : "";
+      return { level: T[0], title: T[1], meaning: c9txt + " " + vktxt, action: act + alt + " Note: for people of African ancestry, CPIC advises also testing additional CYP2C9 variants (*5, *6, *8, *11) that this simple card does not cover.",
         focus: v.vk !== "GG" ? "vk" : v.c9.includes("*3") ? "c9s3" : v.c9.includes("*2") ? "c9s2" : "vk" };
     },
   },
@@ -199,7 +200,7 @@ const DRUGS = {
     result(v) {
       const R = {
         TT: ["ok", "Normal function", "SLCO1B1 makes a transporter that pulls statins out of the blood into the liver. Yours works normally, so simvastatin levels in your blood are expected to be typical.", "No genetics-based change is suggested by CPIC. Usual statin choice and dose apply."],
-        TC: ["warn", "Decreased function", "One of your two SLCO1B1 gene copies works less well. More simvastatin stays in your bloodstream, which raises the chance of muscle pain or muscle injury.", "CPIC recommends that prescribers consider a different statin (for example rosuvastatin or pravastatin), or keep simvastatin at a low dose if it is needed. Report new muscle pain to your clinician."],
+        TC: ["warn", "Decreased function", "One of your two SLCO1B1 gene copies works less well. More simvastatin stays in your bloodstream, which raises the chance of muscle pain or muscle injury.", "CPIC recommends that prescribers consider a different statin (for example rosuvastatin or pravastatin), or, if simvastatin is still needed, keep it at a low dose (CPIC: under 20 mg a day). Report new muscle pain to your clinician."],
         CC: ["danger", "Poor function", "Both of your SLCO1B1 gene copies work poorly. Simvastatin builds up in your bloodstream much more than usual, with a clearly higher risk of muscle injury.", "CPIC recommends that prescribers choose a different statin rather than simvastatin. Bring this result to your prescriber; do not stop a statin on your own."],
       }[v.g];
       return { level: R[0], title: R[1], meaning: R[2], action: R[3], focus: "slco5" };
@@ -333,7 +334,7 @@ const clean = (s) => String(s || "").replace(/\\([<>\[\]&*_])/g, "$1").replace(/
 
 function keyCriteria(text) {
   const inc = String(text || "").split(/exclusion criteria/i)[0];
-  const bullets = (inc.match(/^\s*(?:\*|-|\d+\.)\s+.+$/gm) || []).map((b) => clean(b.replace(/^\s*(?:\*|-|\d+\.)\s+/, ""))).filter((b) => b.length > 12);
+  const bullets = (inc.match(/^\s*(?:\*|-|\d+\.)\s+.+$/gm) || []).map((b) => clean(b.replace(/^\s*(?:\*|-|\d+\.)\s+/, ""))).filter((b) => b.length > 12 && !/(:|\b(OR|AND))$/.test(b));
   const boiler = /informed consent|consent form|willing and (able|capable)|able and willing/i;
   const ranked = [...bullets.filter((b) => !boiler.test(b)), ...bullets.filter((b) => boiler.test(b))];
   return ranked.slice(0, 3).map((b) => (b.length > 260 ? b.slice(0, 257).replace(/\s\S*$/, "") + "…" : b));
@@ -357,7 +358,7 @@ function renderTrials(list, origin, note, isErr) {
   fits.sort((a, b) => (a.locs[0]?.dist ?? 1e9) - (b.locs[0]?.dist ?? 1e9));
   const shown = fits.slice(0, 8);
   $("trialStatus").className = "status" + (isErr ? " err" : "");
-  $("trialStatus").textContent = `${note} Showing ${shown.length} of ${list.length} recruiting studies that match age ${age ?? "any"}${sex === "ALL" ? "" : " and sex " + sex.toLowerCase()}, nearest first.`;
+  $("trialStatus").textContent = `${note} ${list.length} recruiting studies found; ${fits.length} are open to age ${age ?? "any"}${sex === "ALL" ? "" : ", " + sex.toLowerCase()}. Showing the ${shown.length} nearest.`;
   $("trialList").innerHTML = shown.map((t, i) => {
     const near = t.locs[0];
     const ageTxt = `${t.minAgeTxt || "No minimum"}${t.maxAgeTxt ? " – " + t.maxAgeTxt : " and older"}`;
@@ -412,7 +413,7 @@ $("genoControls").addEventListener("change", (e) => { const s = e.target.closest
 $("medCard").addEventListener("click", (e) => { const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
 $("handoff").addEventListener("click", (e) => { const b = e.target.closest("[data-cond]"); if (!b) return; if (b.dataset.cond) $("cond").value = b.dataset.cond; $("trials").scrollIntoView({ behavior: "smooth" }); search(); });
 $("searchBtn").addEventListener("click", search);
-$("sampleToggle").addEventListener("change", () => { $("city").disabled = $("radius").disabled = $("sampleToggle").checked; search(); });
+$("sampleToggle").addEventListener("change", () => { const on = $("sampleToggle").checked; if (on) { $("city").value = "0"; $("radius").value = "150"; } $("city").disabled = $("radius").disabled = on; search(); });
 </script>
 </body>
 </html>
