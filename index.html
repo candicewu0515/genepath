@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GenePath — from a gene report to two real decisions</title>
+<meta name="description" content="Educational demo: understand what a pharmacogenomic result means for clopidogrel, warfarin or simvastatin, and find recruiting clinical trials near you.">
+<meta property="og:title" content="GenePath — from a gene report to two real decisions">
+<meta property="og:description" content="Is my medication affected by my genes? Is there a clinical trial that fits me? Built on All of Us, CPIC and ClinicalTrials.gov public data.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e2f29'/%3E%3Ctext x='16' y='23' font-size='19' font-weight='700' text-anchor='middle' fill='%237fe0cd' font-family='Arial'%3EG%3C/text%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #f5f7f6; --card: #ffffff; --ink: #14201d; --muted: #5a6b66; --line: #dde5e2;
@@ -82,6 +86,20 @@
   .crit .plain { font-size: 14px; color: #0a5e50; background: var(--accent-soft); border-radius: 6px; padding: 4px 8px; margin-top: 4px; display: inline-block; }
   .contact { font-size: 14px; margin-top: 10px; }
   footer { color: var(--muted); font-size: 13px; padding: 4px 0 40px; }
+  :focus-visible { outline: 3px solid #f0a53a; outline-offset: 2px; }
+  .insight { margin: 12px 0 0; font-size: 14px; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; color: #0a5e50; }
+  .ask { border-top: 1px solid var(--line); padding: 14px 18px; }
+  .ask h3 { margin: 0 0 6px; font-size: 16px; }
+  .ask ul { margin: 0; padding-left: 20px; } .ask li { margin: 2px 0; }
+  .ask button { margin-top: 10px; }
+  .trial .lead { font-size: 14px; margin: 0 0 8px; }
+  @media (min-width: 760px) { .card-body { grid-template-columns: 1fr 1fr; gap: 22px; } .bar { grid-template-columns: 190px 1fr 150px; } }
+  @media print {
+    body { background: #fff; } header.top { background: #fff; color: #000; padding: 0 0 8px; } h1 span, .tagline { color: #000; }
+    nav.steps, #trials, .pillrow, #genoControls, .handoff, .tabs, .ask button, footer p:last-child { display: none !important; }
+    section.module { border: 0; padding: 0; } .card, .trial { break-inside: avoid; }
+    .bar .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
   @media (max-width: 560px) { .bar { grid-template-columns: 96px 1fr 92px; font-size: 13px; } h1 { font-size: 25px; } section.module { padding: 16px; } }
 </style>
 </head>
@@ -101,7 +119,7 @@
     <p class="sub">Pick a medication and the result written on your gene report. <i>Pharmacogenomics</i> means how your genes change the way your body handles a drug.</p>
     <div class="pillrow" id="drugPills"></div>
     <div class="controls" id="genoControls"></div>
-    <div class="card" id="medCard"></div>
+    <div class="card" id="medCard" aria-live="polite"></div>
     <div class="handoff" id="handoff"></div>
   </section>
 
@@ -120,7 +138,7 @@
       <button id="searchBtn">Find recruiting trials</button>
       <label class="toggle"><input type="checkbox" id="sampleToggle"> Use saved sample data (works offline)</label>
     </div>
-    <p class="status" id="trialStatus">Choose a condition and press the button.</p>
+    <p class="status" id="trialStatus" role="status" aria-live="polite">Choose a condition and press the button.</p>
     <div id="trialList"></div>
   </section>
 
@@ -230,6 +248,11 @@ function renderMedCard(resetVariant) {
   const top = Object.entries(v.f).sort((a, b) => b[1] - a[1])[0][0];
   const bars = GROUPS.map(([k]) => `<div class="bar ${k === top ? "hi" : ""}"><div class="name">${SHORT[k]}</div><div class="track"><div class="fill" style="width:${(v.f[k] / max * 100).toFixed(1)}%"></div></div><div class="val">${v.f[k].toFixed(1)}% <small>· ~${carrierPct(v.f[k]).toFixed(0)}% carry</small></div></div>`).join("")
     + `<div class="bar"><div class="name"><i>All participants</i></div><div class="track"><div class="fill" style="width:${(v.overall / max * 100).toFixed(1)}%;background:#c9d3d0"></div></div><div class="val">${v.overall.toFixed(1)}%</div></div>`;
+  const sorted = Object.entries(v.f).sort((a, b) => b[1] - a[1]), hi = sorted[0], lo = sorted[sorted.length - 1];
+  const insight = `Most common in people of ${SHORT[hi[0]]} ancestry (${hi[1].toFixed(1)}%) — about ${(hi[1] / lo[1]).toFixed(hi[1] / lo[1] >= 10 ? 0 : 1)}× the rate in ${SHORT[lo[0]]} ancestry (${lo[1].toFixed(1)}%). A test panel or dose designed around one population can miss this.`;
+  const asks = r.level === "ok"
+    ? ["Is this gene result recorded in my medical chart, so future prescribers can see it?", "Are there other medicines I take that this gene also affects?", "Should my close relatives know about this result?"]
+    : [`Does my ${d.gene} result change how well or how safely ${d.name.toLowerCase()} works for me?`, "Is there an alternative medicine or dose you would consider, given this result?", "Is this gene result recorded in my medical chart, and should my relatives be tested?"];
   const tabs = d.variants.length > 1 ? `<div class="tabs">${d.variants.map((k) => `<button data-variant="${k}" aria-pressed="${k === med.variant}">${VARIANTS[k].label}</button>`).join("")}</div>` : "";
   $("medCard").innerHTML = `
     <div class="card-head ${r.level}"><span class="badge">${esc(d.gene)}</span><strong>${esc(d.name)} · ${esc(r.title)}</strong></div>
@@ -241,7 +264,9 @@ function renderMedCard(resetVariant) {
       <h3>How common is this variant around the world?</h3>
       <p class="hint"><b>${esc(v.label)}</b> (${esc(v.rs)}) — ${esc(v.effect)}. Bars show <b>allele frequency</b>: the share of gene copies carrying the variant, not the share of people. “~% carry” is the estimated share of people with at least one copy (Hardy–Weinberg estimate).</p>
       ${tabs}<div class="bars">${bars}</div>
+      <p class="insight">${esc(insight)}</p>
     </div>
+    <div class="ask"><h3>Questions to take to your next appointment</h3><ul>${asks.map((q) => `<li>${esc(q)}</li>`).join("")}</ul><button class="ghost" id="printBtn" type="button">Print this card</button></div>
     <div class="source">Frequencies: All of Us Research Program public Data Browser, aggregate data from ~535,000 participants, retrieved Nov 2026 · Guidance: <a href="${d.url}" target="_blank" rel="noopener">${esc(d.guideline)}</a></div>`;
   const c = CONDITIONS.find((x) => x.key === d.condition);
   $("handoff").innerHTML = `<span>Next question: is there a study recruiting people like me?</span><button class="ghost" id="handoffBtn" data-cond="${c ? c.key : ""}">${c ? "See recruiting " + esc(c.label.toLowerCase()) + " trials" : "Explore recruiting trials"} →</button>`;
@@ -365,10 +390,11 @@ function renderTrials(list, origin, note, isErr) {
     const c = t.contact;
     const contact = c ? `${esc(c.name || "Study contact")}${c.phone ? " · " + esc(c.phone) : ""}${c.email ? ` · <a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}` : "See the study page for site contacts";
     return `<article class="trial">
-      <h3>${esc(t.plain || firstSentence(t.summary))}</h3>
-      <p class="official">Official title: ${esc(t.title)} · <a href="https://clinicaltrials.gov/study/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.id)}</a></p>
+      <h3>${esc(t.plain || t.title)}</h3>
+      ${t.plain ? "" : `<p class="lead">${esc(firstSentence(t.summary))}</p>`}
+      <p class="official">${t.plain ? "Official title: " + esc(t.title) + " · " : ""}<a href="https://clinicaltrials.gov/study/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.id)}</a></p>
       <div class="chips"><span class="chip">${t.status === "RECRUITING" ? "Recruiting now" : esc(t.status)}</span>
-        ${near ? `<span class="chip">${esc(near.city)}, ${esc(near.state)} · ${Math.round(near.dist)} mi from ${esc(origin.label)}</span>` : `<span class="chip grey">Location not listed</span>`}
+        ${near ? `<span class="chip">${esc(near.city)}, ${esc(near.state)} · ${near.dist < 1 ? "under 1" : Math.round(near.dist)} mi from ${esc(origin.label)}</span>` : `<span class="chip grey">Location not listed</span>`}
         <span class="chip grey">Ages: ${esc(ageTxt)}</span>
         <span class="chip grey">${t.type === "OBSERVATIONAL" ? "Observational (no experimental treatment)" : "Tests a treatment" + (t.phases.length ? " · " + esc(t.phases.join("/").replace(/PHASE/g, "Phase ")) : "")}</span></div>
       <details ${i === 0 ? "open" : ""}><summary>Key entry rules, in plain words</summary>
@@ -410,7 +436,7 @@ renderDrugPills(); renderGenoControls(); renderMedCard(true);
 
 $("drugPills").addEventListener("click", (e) => { const b = e.target.closest("[data-drug]"); if (!b) return; med.drug = b.dataset.drug; renderDrugPills(); renderGenoControls(); renderMedCard(true); });
 $("genoControls").addEventListener("change", (e) => { const s = e.target.closest("[data-sel]"); if (!s) return; med.values[s.dataset.sel] = s.value; renderMedCard(true); });
-$("medCard").addEventListener("click", (e) => { const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
+$("medCard").addEventListener("click", (e) => { if (e.target.closest("#printBtn")) return window.print(); const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
 $("handoff").addEventListener("click", (e) => { const b = e.target.closest("[data-cond]"); if (!b) return; if (b.dataset.cond) $("cond").value = b.dataset.cond; $("trials").scrollIntoView({ behavior: "smooth" }); search(); });
 $("searchBtn").addEventListener("click", search);
 $("sampleToggle").addEventListener("change", () => { const on = $("sampleToggle").checked; if (on) { $("city").value = "0"; $("radius").value = "150"; } $("city").disabled = $("radius").disabled = on; search(); });
