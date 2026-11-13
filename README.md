@@ -17,6 +17,19 @@ Open `index.html` in a browser. No build step, no server, no API key.
 
 The live site is served by GitHub Pages from the `main` branch; every push updates it.
 
+## Rebuild the data
+
+The committed data files are generated. To refresh them from the public APIs:
+
+```bash
+python3 tools/build_pgx_data.py      # genes, guidelines, frequencies -> pgx-data.js
+python3 tools/make_snapshot.py       # offline trial sample -> snapshot.js
+python3 tools/verify_frequencies.py  # re-check every frequency against All of Us
+```
+
+`build_pgx_data.py` fails loudly if a configured genotype, drug or variant cannot be
+confirmed upstream, so the app never ships a value that was not checked.
+
 ## Files
 
 | File | Purpose |
@@ -24,12 +37,14 @@ The live site is served by GitHub Pages from the `main` branch; every push updat
 | `index.html` | The whole app (HTML, CSS, JavaScript) |
 | `pgx-data.js` | Generated gene, guideline and frequency data (never edited by hand) |
 | `snapshot.js` | Saved trial results, used by the "sample data" switch and as a fallback when offline |
-| `data/trials-snapshot.json` | The same snapshot as plain JSON |
+| `data/pgx-data.json` | The same gene data as plain JSON, for reading and checking |
+| `data/trials-snapshot.json` | The same trial snapshot as plain JSON |
 | `tools/build_pgx_data.py` | Rebuilds `pgx-data.js` from the CPIC and All of Us APIs |
 | `tools/verify_frequencies.py` | Re-checks every frequency against All of Us |
 | `tools/make_snapshot.py` | Regenerates the trial snapshot |
-| `docs/pgx-frequency-data.md` | Source table for the allele frequencies hard-coded in the app |
-| `docs/one-pager.pdf` | One-page project summary (source: `docs/one-pager.html`) |
+| `docs/pgx-frequency-data.md` | Reference table of the six original frequencies, with its verification record |
+| `docs/one-pager.html` | Source of the one-page summary; print to PDF to regenerate |
+| `docs/one-pager.pdf` | One-page project summary |
 | `docs/devpost-description.md` | Project story text for the Devpost page |
 | `docs/demo-script.md` | Script for the demo video |
 | `genepath-code.zip` | Submission bundle of the repository, regenerated with `git archive` |
@@ -48,6 +63,8 @@ The live site is served by GitHub Pages from the `main` branch; every push updat
 ## Limits
 
 - Frequencies are population-level allele frequencies, not the share of people affected and not a prediction for any individual.
-- Guideline text is simplified. The clopidogrel guidance applies mainly to acute coronary syndrome and stent (PCI) patients; the warfarin card does not cover the extra CYP2C9 variants CPIC recommends testing in people of African ancestry.
+- Guideline text is quoted from CPIC rather than paraphrased, so it keeps clinical wording. The clopidogrel card shows the recommendations for acute coronary syndrome and stent (PCI) patients; the warfarin card does not cover the extra CYP2C9 variants CPIC recommends testing in people of African ancestry.
+- Only common variants are covered. CYP2D6, which drives codeine, tramadol and many antidepressants, needs copy-number calling and is not included. Where a guideline uses two genes, the card fixes the second at normal function and says so.
 - The trial list is a starting point. Only the study team can confirm eligibility.
+- The offline trial sample is a snapshot; recruiting status changes daily, so the live search is the accurate one.
 - Nothing entered on the page is stored; the only network request is the public ClinicalTrials.gov search (condition and city, no personal identifiers).
