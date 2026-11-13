@@ -32,6 +32,7 @@ The live site is served by GitHub Pages from the `main` branch; every push updat
 | `docs/one-pager.pdf` | One-page project summary (source: `docs/one-pager.html`) |
 | `docs/devpost-description.md` | Project story text for the Devpost page |
 | `docs/demo-script.md` | Script for the demo video |
+| `genepath-code.zip` | Submission bundle of the repository, regenerated with `git archive` |
 
 ## Data sources
 
