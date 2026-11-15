@@ -1,6 +1,8 @@
 # Demo video script (about 4 minutes)
 
-Record the screen at https://candicewu0515.github.io/genepath/ in a desktop-width window. Lines in quotes are narration; lines in brackets are what to do on screen.
+Record the screen at https://candicewu0515.github.io/genepath/ in a desktop-width window.
+Hard-refresh first (Cmd+Shift+R) so the browser is not showing a cached older page.
+Lines in quotes are narration; lines in brackets are what to do on screen.
 
 ## 0:00–0:30 · The problem
 [Show the top of the page.]
@@ -28,10 +30,12 @@ Record the screen at https://candicewu0515.github.io/genepath/ in a desktop-widt
 
 "The card ends with questions to bring to an appointment, and it prints on one page."
 
-## 2:00–3:20 · Clinical trial navigator
-[Click the hand-off button under the card. The page scrolls and loads live results.]
+[Switch the Medication dropdown back to Clopidogrel.]
 
-"The second question: is anyone studying better options for people like me? Each drug hands off to the condition it is used for. This is a live query to ClinicalTrials.gov, filtered to studies open to a 68-year-old and sorted by distance. If nothing is recruiting nearby, the search widens itself and says so."
+## 2:00–3:20 · Clinical trial navigator
+[Click "See recruiting Atrial fibrillation trials" under the card. The page scrolls and loads live results.]
+
+"The second question: is anyone studying better options for people like me? Each drug hands off to the condition it is used for — clopidogrel to atrial fibrillation. This is a live query to ClinicalTrials.gov, filtered to studies open to a 68-year-old and sorted by distance. If nothing is recruiting nearby, the search widens itself and says so."
 
 [Open the first trial's "Key entry rules, in plain words".]
 

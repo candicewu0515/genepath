@@ -142,8 +142,8 @@
   </section>
 
   <footer>
-    <p><b>Data sources.</b> Allele frequencies: All of Us Research Program public Data Browser (aggregate data, retrieved Nov 2026). Prescribing guidance: CPIC guidelines (cpicpgx.org). Trials: ClinicalTrials.gov API v2, queried live from your browser.</p>
-    <p><b>Limits.</b> Frequencies describe populations, not individuals. Guideline summaries are simplified and apply to specific clinical situations. Trial listings may change daily; only the study team can confirm whether you qualify. Plain-language notes are simplified explanations of medical terms, not eligibility decisions.</p>
+    <p><b>Data sources.</b> Allele frequencies: All of Us Research Program public Data Browser (aggregate data, retrieved Nov 2026). Prescribing guidance: the CPIC API (api.cpicpgx.org), quoted verbatim. Trials: ClinicalTrials.gov API v2, queried live from your browser.</p>
+    <p><b>Limits.</b> Frequencies describe populations, not individuals. Guideline text is quoted from CPIC and applies to specific clinical situations. Trial listings may change daily; only the study team can confirm whether you qualify. Plain-language notes are simplified explanations of medical terms, not eligibility decisions.</p>
   </footer>
 </div>
 
@@ -325,6 +325,18 @@ const GLOSSARY = [
   [/childbearing/i, "There are rules about pregnancy and birth control during the study."],
   [/completed (study|the week)|enrolled in the/i, "This study is only open to people who already took part in a specific earlier study."],
   [/stroke|systemic embolism/i, "A history of stroke or a clot that travelled elsewhere in the body is relevant here."],
+  [/\bSLE\b|lupus/i, "SLE is lupus, an autoimmune disease in which the immune system attacks the body's own tissue."],
+  [/classification criteria|EULAR|\bACR\b|diagnosed according to|meets? the .{0,20}criteria/i, "Your diagnosis has to have been made using a specific published checklist that specialists agree on."],
+  [/antibod|anti-nuclear|anti-dsDNA|anti-Sm|titre|titer|serolog|seropositive/i, "A blood test has to show particular antibodies — immune proteins used to confirm the diagnosis."],
+  [/SLEDAI|DAS28|disease activity|active, moderate|moderate-severe|active disease|swollen joint|tender joint/i, "Your condition has to be active enough right now, measured with a standard scoring system."],
+  [/DMARD|methotrexate|biologic|TNF|JAK inhibitor/i, "These are the usual drugs for this condition; the study sets rules about which ones you have already taken."],
+  [/corticosteroid|prednis|glucocorticoid/i, "There are rules about steroid tablets and the dose you are taking."],
+  [/washout|discontinu|must stop|stop taking/i, "You may have to stop a current medicine for a set period before joining."],
+  [/tuberculosis|hepatitis B|hepatitis C|\bHIV\b|active infection/i, "You will be screened for certain infections, which can rule out taking part."],
+  [/eGFR|creatinine|renal function|hepatic function|liver function|haemoglobin|hemoglobin|platelet count/i, "Blood tests have to show your kidneys, liver and blood counts are within a set range."],
+  [/biopsy/i, "A small tissue sample has to be taken for testing."],
+  [/vaccin|immuni[sz]ation/i, "There are rules about which vaccinations you need, and when."],
+  [/at screening|screening visit|\bscreening\b/i, "Screening is the set of checks done before you can join, usually blood tests and a clinic visit."],
   [/(\d+)\s*(years|yrs)|years of age|\bage[sd]?\b/i, "There is an age requirement — check it against your own age."],
 ];
 function plainNote(text) {
