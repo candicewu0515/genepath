@@ -17,6 +17,14 @@ Open `index.html` in a browser. No build step, no server, no API key.
 
 The live site is served by GitHub Pages from the `main` branch; every push updates it.
 
+## Submission bundle
+
+The zip uploaded to Devpost is not kept in the repository; rebuild it when needed:
+
+```bash
+git archive --format=zip --prefix=genepath/ -o genepath-code.zip HEAD
+```
+
 ## Rebuild the data
 
 The committed data files are generated. To refresh them from the public APIs:
@@ -47,7 +55,6 @@ confirmed upstream, so the app never ships a value that was not checked.
 | `docs/one-pager.pdf` | One-page project summary |
 | `docs/devpost-description.md` | Project story text for the Devpost page |
 | `docs/recording-script.md` | Demo video script: each block pairs the on-screen action with the line to read |
-| `genepath-code.zip` | Submission bundle, rebuilt with `git archive` (excludes itself via `.gitattributes`) |
 
 ## Data sources
 
