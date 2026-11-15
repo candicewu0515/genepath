@@ -46,7 +46,7 @@ confirmed upstream, so the app never ships a value that was not checked.
 | `docs/one-pager.html` | Source of the one-page summary; print to PDF to regenerate |
 | `docs/one-pager.pdf` | One-page project summary |
 | `docs/devpost-description.md` | Project story text for the Devpost page |
-| `docs/demo-script.md` | Script for the demo video |
+| `docs/recording-script.md` | Demo video script: each block pairs the on-screen action with the line to read |
 | `genepath-code.zip` | Submission bundle of the repository, regenerated with `git archive` |
 
 ## Data sources
