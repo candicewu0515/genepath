@@ -173,7 +173,10 @@ const WARF_BANDS = { GG: [0, 0, 1, 1, 1, 2], AG: [0, 1, 1, 1, 2, 2], AA: [1, 1, 
 
 const med = { drug: D.drugs.length ? D.drugs[0].key : null, geno: 0, c9: "*1/*2", vk: "AG", variant: null };
 const drugOf = (k) => D.drugs.find((d) => d.key === k);
-const variantsOf = (d) => Object.values(D.variants).filter((v) => v.gene === d.gene || (d.special === "warfarin" && v.gene === "CYP2C9"));
+// The drug's own gene charts first, so the chart matches the gene named on the card.
+const variantsOf = (d) => Object.values(D.variants)
+  .filter((v) => v.gene === d.gene || (d.special === "warfarin" && v.gene === "CYP2C9"))
+  .sort((x, y) => (x.gene === d.gene ? 0 : 1) - (y.gene === d.gene ? 0 : 1));
 
 function renderMedControls() {
   const d = drugOf(med.drug);
