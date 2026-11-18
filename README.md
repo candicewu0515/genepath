@@ -2,7 +2,7 @@
 
 GenePath retrieves an adult CPIC guideline row for a pharmacist reviewing a clopidogrel or rosuvastatin report. Enter the reported diplotype and indication or companion-gene phenotype. The result shows the source table, action category, and recommendation strength. Missing inputs prompt review.
 
-[73-second captioned demo](docs/ai-for-medicine/genepath-demo.mp4) · [Competition write-up](docs/ai-for-medicine/submission.md) · [Per-case predictions](review/evaluation/predictions.json)
+[Narrated browser demo (about 90 seconds)](https://www.youtube.com/watch?v=ef9ZuNMNDDQ) · [Competition write-up](docs/ai-for-medicine/submission.md) · [Per-case predictions](review/evaluation/predictions.json)
 
 ## Run the project
 
