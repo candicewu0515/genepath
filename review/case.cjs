@@ -1,5 +1,5 @@
 "use strict";
-const {lookup,labels,refs,categories} = require("./lookup.js");
+const {lookup,phenotypeText,actionText,rowNote,refs} = require("./lookup.js");
 const args = process.argv.slice(2);
 if (args.length !== 4) {
   console.log("Usage: node review/case.cjs DRUG AGE DIPLOTYPE CONTEXT");
@@ -15,8 +15,9 @@ if (args.length !== 4) {
     console.log("Reason   ",result.reason);
   } else {
     console.log("Source   ",refs[result.reference][0]);
-    console.log("Phenotype",labels[result.phenotype] || result.phenotype.split("/").join(" / "));
-    console.log("Category ",categories[result.category]);
+    console.log("Phenotype",phenotypeText(result));
+    console.log("Category ",actionText(result));
     console.log("Strength ",result.strength);
+    console.log("Note     ",rowNote(result));
   }
 }

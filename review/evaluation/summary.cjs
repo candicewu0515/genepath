@@ -8,4 +8,9 @@ for (const [key,r] of Object.entries(report.splits.test)) {
   const {n,exact,reviewExpected,rowsOnReviewCases} = r;
   summary[labels[key]] = {n,exact,reviewExpected,rowsOnReviewCases};
 }
-fs.writeFileSync(path.join(__dirname,"summary.js"),"window.REVIEW_SCORES = "+JSON.stringify(summary,null,2)+";\n");
+const {reports, labs, groups} = report.publishedPhenotypes;
+const external = {reports, labs, diplotypes: groups.length};
+const shared = Object.fromEntries(Object.entries(report.sharedPanel).map(([key, {exact, n}]) => [key, {exact, n}]));
+const result = {methods: summary, external, shared};
+fs.writeFileSync(path.join(__dirname, "summary.js"), "window.REVIEW_SCORES = " + JSON.stringify(result, null, 2) + ";\n");
+fs.writeFileSync(path.join(__dirname, "predictions.json"), JSON.stringify(report, null, 2) + "\n");

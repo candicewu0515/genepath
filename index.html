@@ -1,21 +1,25 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GenePath · PGx guideline review</title><link rel="stylesheet" href="review/style.css"></head>
 <body>
-<header><div class="shell nav"><a class="brand" href="index.html">Gene<span>Path</span></a><nav aria-label="Resources"><a href="#evaluation">Evaluation</a><a href="explorer.html">Original explorer ↗</a></nav></div></header>
+<header><div class="shell nav"><a class="brand" href="index.html">Gene<span>Path</span></a><nav aria-label="Resources"><a href="docs/ai-for-medicine/genepath-demo.mp4">Watch demo</a><a href="#evaluation">Evaluation</a><a href="explorer.html">Original explorer ↗</a></nav></div></header>
 <main class="shell">
-<section class="intro"><p class="kicker">Pharmacogenomics</p><h1>Find the matching guideline row.</h1><p>Use an adult lab report and its clinical context to locate a CPIC reference for pharmacist review.</p></section>
+<section class="intro"><h1>Which CPIC recommendation applies?</h1><p>Review an adult pharmacogenomic report for clopidogrel or rosuvastatin. Select the medication, enter the lab result and confirm the clinical context.</p></section>
 <section class="layout" aria-label="Guideline lookup">
 <div class="panel inputs"><h2>Report details</h2>
 <div class="field"><label for="drug">Medication</label><select id="drug"><option value="clopidogrel">Clopidogrel</option><option value="rosuvastatin">Rosuvastatin</option></select></div>
 <div class="field"><label for="age">Patient age group</label><select id="age"><option value="unknown">Select age group</option><option value="adult">Adult (18 or older)</option><option value="child">Under 18</option></select></div>
-<div class="field"><label for="diplotype" id="geneLabel">CYP2C19 diplotype</label><input type="text" id="diplotype" placeholder="e.g., *1/*2" autocomplete="off" spellcheck="false"></div>
+<div class="field"><label for="diplotype" id="geneLabel">CYP2C19 diplotype</label><input type="text" id="diplotype" aria-describedby="formatHint" placeholder="e.g., *1/*2" autocomplete="off" spellcheck="false"><small id="formatHint">Enter the two star alleles, with or without the gene name.</small></div>
 <div class="field"><label for="context" id="contextLabel">Indication</label><select id="context"></select></div>
-<button id="sample" type="button">Load example report</button></div>
+<div class="example-actions"><button id="sample" type="button">Load example report</button><button id="compare" type="button" hidden></button></div></div>
 <section class="panel result" aria-live="polite" aria-atomic="true"><p id="status" class="status"></p><h2 id="headline"></h2><p id="detail"></p><dl id="facts"></dl><a id="citation" hidden></a><p class="fine">Educational reference for professional review. Medication decisions require the treating clinician and the full patient record.</p></section>
 </section>
-<section id="evaluation"><div class="sectionhead"><div><p class="kicker">Evaluation</p><h2>What the test cases show</h2></div><a href="review/evaluation/cases.tsv" download>Download cases ↓</a></div>
-<p>Frozen synthetic cases from two CPIC publications. An exact match requires the phenotype, source, action category and strength, or an appropriate referral.</p>
-<div class="tablewrap"><table><thead><tr><th scope="col">Method</th><th scope="col">Exact matches</th><th scope="col">Rows shown despite missing inputs or scope</th></tr></thead><tbody id="scores"></tbody></table></div>
-<p class="small">These cases measure agreement with published rows. Independent pharmacist adjudication and clinical outcome testing are pending.</p></section>
+<section id="evaluation"><div class="sectionhead"><div><h2>Evaluation</h2></div><a href="review/evaluation/cases.tsv" download>Download cases ↓</a></div>
+<h3>Guideline retrieval</h3><p>Frozen synthetic cases from two CPIC publications. An exact match requires the phenotype, source, action category and strength, or an appropriate referral.</p>
+<div class="tablewrap"><table><thead><tr><th scope="col">Method</th><th scope="col">Exact matches</th><th scope="col">Rows shown when review was needed ↓</th></tr></thead><tbody id="scores"></tbody></table></div>
+<p id="sharedPanel" class="small"></p>
+<h3>Published CYP2C19 phenotype calls</h3>
+<p id="publishedCaption"></p>
+<div class="tablewrap"><table><thead><tr><th scope="col">Laboratory</th><th scope="col">Matching reports</th></tr></thead><tbody id="labs"></tbody></table></div>
+<p class="small">Absalon used CPIC phenotype conventions. The other laboratories used local conventions. The study assesses phenotype agreement only. Independent review of medication recommendations and clinical outcome testing are pending. <a href="https://doi.org/10.1111/bcpt.13990">Study, Table 2 ↗</a> · <a href="review/evaluation/published-phenotypes.tsv" download>Grouped reference data ↓</a></p></section>
 </main><footer><div class="shell">GenePath · AI for Medicine edition</div></footer>
 <script src="review/lookup.js"></script><script src="review/evaluation/summary.js"></script><script src="review/ui.js"></script></body></html>

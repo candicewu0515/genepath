@@ -14,11 +14,12 @@ With Node.js 18 or later, the same lookup is available from the command line. Ru
 node review/case.cjs clopidogrel adult '*1/*2' acs
 node review/case.cjs clopidogrel adult '*1/*2' neuro
 node review/case.cjs rosuvastatin adult '*1/*5' unknown
-node review/evaluation/run.cjs
+node --test review/evaluation/input.test.cjs
+node review/evaluation/run.cjs --check
 node review/evaluation/run.cjs --json
 ```
 
-The last command includes predictions for every example and a SHA-256 digest of the frozen reference file. To regenerate the browser score table after changing the evaluation, run `node review/evaluation/summary.cjs`. The benchmark is deterministic and has no trained parameters or random seeds.
+The last command includes predictions for every example and a SHA-256 digest of the frozen reference file. To regenerate both the per-case JSON and browser score table after changing the evaluation, run `node review/evaluation/summary.cjs`. The benchmark is deterministic and has no trained parameters or random seeds.
 
 ## Evaluation
 
@@ -33,6 +34,22 @@ Six development examples and 26 test examples are listed in [cases.tsv](review/e
 An exact row requires the expected primary phenotype (and companion phenotype for rosuvastatin), source and indication column, category, and strength. In six incomplete or out-of-scope reports the expected output was referral with no row. A matched row explicitly stating that CPIC gives no recommendation is scored separately from a referral. The latter reflects missing inputs or a project scope limit.
 
 The fixed-context comparator reconstructs the two original cards using the committed genotype data, with ACS/PCI or normal ABCG2 as the default. An unavailable diplotype is counted as review, and reverse allele order is accepted. The medication-only comparator also assumes the reference diplotype. The comparators model structured lookup, without a pharmacist reading the full guideline or the caveats on the historical site. These figures therefore describe the benchmark and its assumptions. They do not estimate a clinician's accuracy, time saved, or patient outcomes.
+
+### Comparing only shared diplotypes
+
+Fourteen complete test cases have diplotypes available in both editions. The context-aware lookup returned the exact expected row in 14/14, versus 4/14 with the older fixed context. This subset removes the advantage of supporting more alleles while retaining deliberately selected indication and companion-gene changes.
+
+### Published phenotype comparison
+
+Table 2 of Baltzer Houlind et al. reports CYP2C19 diplotypes and phenotype labels from three Danish laboratories for the same 18 reports. We grouped the published calls into six distinct diplotypes with counts and ran each through GenePath. The adult/ACS values supplied to the program are fixed placeholders for accessing its phenotype output. The study provides no clopidogrel treatment labels. Compare each laboratory's reported phenotype with GenePath and weight by the number of reports in each group.
+
+| Laboratory | Matching CYP2C19 phenotypes |
+|---|---:|
+| Absalon (CPIC conventions) | 18/18 |
+| Filadelfia (local conventions) | 14/18 |
+| Sct. Hans (local conventions) | 7/18 |
+
+The *1/*17 reports illustrate the distinction. GenePath and Absalon label them rapid, Filadelfia ultrarapid, and Sct. Hans normal. The study covers six diplotypes from one cohort. These counts describe phenotype agreement under each convention. Clinical action, rosuvastatin performance and patient benefit require other evidence. [Published study](https://doi.org/10.1111/bcpt.13990) · [Grouped counts](review/evaluation/published-phenotypes.tsv)
 
 ## Scope and provenance
 

@@ -16,7 +16,7 @@
     S5: ["Table 5 · Adult two-gene lookup", "https://files.cpicpgx.org/data/guideline/publication/statins/2022/publication.pdf#page=12"]
   };
   const categories = {
-    usual: "Usual starting regimen in this guideline row",
+    usual: "Standard regimen in the selected guideline row",
     avoid_standard: "Guideline advises avoiding the usual clopidogrel regimen if possible",
     avoid_drug: "Guideline advises avoiding clopidogrel if possible",
     consider_other: "Guideline suggests considering an alternative antiplatelet",
@@ -30,10 +30,16 @@
     other_cv: "Other cardiovascular indication (e.g., peripheral arterial disease without ACS or PCI)",
     neuro: "Neurovascular indication (e.g., ischemic stroke or TIA)"
   };
-  function getPair(raw) {
-    const text = String(raw || "").trim().replace(/\s/g, "");
-    if (!/^\*\d+\/\*\d+$/.test(text)) return [];
-    return text.split("/").sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+  function parsePair(raw, gene) {
+    const tokens = String(raw ?? "").trim().split("/");
+    if (tokens.length !== 2) return [];
+    const pair = [];
+    for (const token of tokens) {
+      const match = /^(?:(CYP2C19|SLCO1B1)\s*)?(\*[1-9]\d*)$/i.exec(token.trim());
+      if (!match || (match[1] && match[1].toUpperCase() !== gene)) return [];
+      pair.push(match[2]);
+    }
+    return pair.sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
   }
   function cypPhenotype(pair) {
     if (pair.length !== 2 || !pair.every(a => ["*1","*2","*3","*9","*17"].includes(a))) return null;
@@ -69,13 +75,38 @@
     return row(slco + "/" + abcg2, category, strength, "S5");
   }
   function lookup({drug, age, diplotype, context}) {
-    if (age !== "adult") return review("Confirm adult scope. This edition covers adult reports only.");
-    const pair = getPair(diplotype);
-    if (drug === "clopidogrel") return clopidogrel(pair, context);
-    if (drug === "rosuvastatin") return rosuvastatin(pair, context);
-    return review("Select one of the two medications in this edition.");
+    if (age === "child") return review("This reference covers adults. Use an age-appropriate source for this report.");
+    if (age !== "adult") return review("Confirm the patient’s age group before selecting an adult guideline row.");
+    if (!["clopidogrel", "rosuvastatin"].includes(drug)) {
+      return review("Select one of the two medications in this edition.");
+    }
+    const gene = drug === "clopidogrel" ? "CYP2C19" : "SLCO1B1";
+    const pair = parsePair(diplotype, gene);
+    if (pair.length === 0) return review("Check the " + gene + " report for two star alleles separated by a slash. Enter each allele exactly as reported.");
+    return drug === "clopidogrel" ? clopidogrel(pair, context) : rosuvastatin(pair, context);
   }
-  const api = {lookup, labels, refs, categories, contexts};
+  function phenotypeText(result) {
+    if (result.reference !== "S5") return labels[result.phenotype];
+    const [slco, abcg2] = result.phenotype.split("/");
+    return "SLCO1B1 " + slco + " / ABCG2 " + abcg2;
+  }
+  function actionText(result) {
+    if (result.category === "usual") {
+      return result.reference === "S5"
+        ? "Guideline row for the usual starting dose"
+        : "Guideline row for standard clopidogrel maintenance dosing";
+    }
+    return categories[result.category];
+  }
+  function rowNote(result) {
+    if (result.reference === "S5") return "This adult starting-dose table combines two gene results. Check population-specific labeling, interactions and other clinical factors.";
+    if (result.category === "no_guidance") return "The inputs identify a published row. CPIC leaves a genotype-based action unspecified for this phenotype and indication.";
+    if (result.reference === "C3" && ["consider_other", "avoid_drug"].includes(result.category)) {
+      return "Review contraindications before choosing an alternative. CPIC flags prior stroke or TIA as a contraindication to prasugrel.";
+    }
+    return "The action and recommendation strength apply to the selected indication.";
+  }
+  const api = {lookup, phenotypeText, actionText, rowNote, refs, contexts};
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else window.GenePathReview = api;
 })();

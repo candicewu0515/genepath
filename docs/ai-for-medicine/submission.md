@@ -12,7 +12,11 @@ GenePath normalizes the reported allele pair, translates it to a supported pheno
 
 We compared the lookup with two defaults on 26 prespecified synthetic test cases, separate from six development examples. Twenty cases had an applicable row and six required review. We scored the phenotype, source and indication column, recommendation category, and strength together. GenePath matched 20 of 20 rows and referred all six boundary cases. The fixed-context comparator matched six of 26 exact outcomes. It displayed a row on four of the six cases requiring review. A medication-only default matched zero exact outcomes and displayed a row on all six. On the less stringent category-and-strength measure, the three methods scored 26, eight, and three respectively. The comparison set favors cases where additional context matters.
 
-The reference rows and executable rules were derived from the same publications. This establishes agreement with the selected examples. The public TSV, per-case predictions and deterministic command allow judges to audit each result.
+Among the 14 complete cases with diplotypes covered by both editions, context-aware lookup matched 14 exact rows and the fixed-context comparator matched four. This comparison isolates the effect of context from differences in allele coverage.
+
+The synthetic reference rows and executable rules were derived from the same publications. This establishes agreement with the selected examples. The public TSV, per-case predictions and deterministic command allow judges to audit each result.
+
+We also checked the phenotype translation against published CYP2C19 calls from 18 reports representing six diplotypes. Agreement was 18/18 with Absalon, which used CPIC conventions, 14/18 with Filadelfia and 7/18 with Sct. Hans. The last two laboratories used local conventions. All three comparisons concern the same 18 reports. These data evaluate phenotype agreement only. [Baltzer Houlind et al., Table 2](https://doi.org/10.1111/bcpt.13990)
 
 ## Who benefits, and who could be harmed
 
@@ -20,7 +24,7 @@ Pharmacists and PGx trainees can trace a lookup to its source and see which info
 
 ## Limitations and what we would do with another month
 
-Two adult medications and two versioned guidelines are covered. The reference set contains synthetic cases and lacks external adjudication. We have not measured clinical outcomes or review time. With another month we would obtain independently authored, pharmacist-adjudicated cases, measure time per report in a blinded crossover comparison, and track disagreements and abstentions across diplotypes.
+Two adult medications and two versioned guidelines are covered. The medication-level reference set contains synthetic cases and lacks independent pharmacist adjudication. The published comparison covers CYP2C19 phenotype translation only. We have not measured clinical outcomes or review time. With another month we would obtain independently authored, pharmacist-adjudicated cases, measure time per report in a blinded crossover comparison, and track disagreements and abstentions across diplotypes.
 
 ## Attribution
 

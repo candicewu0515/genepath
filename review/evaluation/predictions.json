@@ -562,7 +562,7 @@
             "exact": true,
             "result": {
               "state": "review",
-              "reason": "Check the CYP2C19 diplotype. This edition covers *1, *2, *3, *9 and *17."
+              "reason": "Check the CYP2C19 report for two star alleles separated by a slash. Enter each allele exactly as reported."
             }
           },
           {
@@ -584,7 +584,7 @@
             "exact": true,
             "result": {
               "state": "review",
-              "reason": "Confirm the SLCO1B1 report. This edition covers *1/*1, *1/*5 and *5/*5."
+              "reason": "Check the SLCO1B1 report for two star alleles separated by a slash. Enter each allele exactly as reported."
             }
           },
           {
@@ -595,7 +595,7 @@
             "exact": true,
             "result": {
               "state": "review",
-              "reason": "Confirm adult scope. This edition covers adult reports only."
+              "reason": "This reference covers adults. Use an age-appropriate source for this report."
             }
           },
           {
@@ -606,7 +606,7 @@
             "exact": true,
             "result": {
               "state": "review",
-              "reason": "Confirm adult scope. This edition covers adult reports only."
+              "reason": "Confirm the patient’s age group before selecting an adult guideline row."
             }
           },
           {
@@ -1356,5 +1356,478 @@
         ]
       }
     }
+  },
+  "sharedPanel": {
+    "contextAware": {
+      "n": 14,
+      "categoryAndStrength": 14,
+      "exact": 14,
+      "reviewExpected": 0,
+      "rowsOnReviewCases": 0,
+      "abstainedOnReferenceRows": 0,
+      "rows": [
+        {
+          "id": "T01",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "UM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T02",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "RM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T03",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "PM",
+            "category": "avoid_drug",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T07",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "RM",
+            "category": "no_guidance",
+            "strength": "none",
+            "reference": "C3"
+          }
+        },
+        {
+          "id": "T08",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "UM",
+            "category": "no_guidance",
+            "strength": "none",
+            "reference": "C2B"
+          }
+        },
+        {
+          "id": "T09",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "IM",
+            "category": "no_guidance",
+            "strength": "none",
+            "reference": "C2B"
+          }
+        },
+        {
+          "id": "T10",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "NM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2B"
+          }
+        },
+        {
+          "id": "T12",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "normal/decreased",
+            "category": "usual",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T13",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "normal/poor",
+            "category": "cap20",
+            "strength": "optional",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T14",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "decreased/decreased",
+            "category": "caution20",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T15",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "decreased/poor",
+            "category": "cap10",
+            "strength": "optional",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T16",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "poor/normal",
+            "category": "cap20",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T17",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "poor/decreased",
+            "category": "cap20",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T18",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "poor/poor",
+            "category": "cap10",
+            "strength": "optional",
+            "reference": "S5"
+          }
+        }
+      ]
+    },
+    "fixedContext": {
+      "n": 14,
+      "categoryAndStrength": 6,
+      "exact": 4,
+      "reviewExpected": 0,
+      "rowsOnReviewCases": 0,
+      "abstainedOnReferenceRows": 0,
+      "rows": [
+        {
+          "id": "T01",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "UM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T02",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "RM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T03",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "PM",
+            "category": "avoid_drug",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T07",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "RM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T08",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "UM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T09",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "IM",
+            "category": "avoid_standard",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T10",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "NM",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "C2A"
+          }
+        },
+        {
+          "id": "T12",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "normal/normal",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T13",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "normal/normal",
+            "category": "usual",
+            "strength": "strong",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T14",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "decreased/normal",
+            "category": "caution20",
+            "strength": "strong",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T15",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "decreased/normal",
+            "category": "caution20",
+            "strength": "strong",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T16",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": true,
+          "result": {
+            "state": "row",
+            "phenotype": "poor/normal",
+            "category": "cap20",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T17",
+          "expected": "row",
+          "predicted": "row",
+          "action": true,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "poor/normal",
+            "category": "cap20",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        },
+        {
+          "id": "T18",
+          "expected": "row",
+          "predicted": "row",
+          "action": false,
+          "exact": false,
+          "result": {
+            "state": "row",
+            "phenotype": "poor/normal",
+            "category": "cap20",
+            "strength": "moderate",
+            "reference": "S5"
+          }
+        }
+      ]
+    }
+  },
+  "publishedPhenotypes": {
+    "source": "10.1111/bcpt.13990, Table 2",
+    "reports": 18,
+    "labs": {
+      "absalon": 18,
+      "filadelfia": 14,
+      "sctHans": 7
+    },
+    "groups": [
+      {
+        "diplotype": "*1/*1",
+        "reports": 6,
+        "absalon": "NM",
+        "filadelfia": "NM",
+        "sctHans": "NM",
+        "predicted": "NM"
+      },
+      {
+        "diplotype": "*1/*2",
+        "reports": 4,
+        "absalon": "IM",
+        "filadelfia": "IM",
+        "sctHans": "NM",
+        "predicted": "IM"
+      },
+      {
+        "diplotype": "*1/*17",
+        "reports": 4,
+        "absalon": "RM",
+        "filadelfia": "UM",
+        "sctHans": "NM",
+        "predicted": "RM"
+      },
+      {
+        "diplotype": "*17/*17",
+        "reports": 2,
+        "absalon": "UM",
+        "filadelfia": "UM",
+        "sctHans": "NM",
+        "predicted": "UM"
+      },
+      {
+        "diplotype": "*2/*17",
+        "reports": 1,
+        "absalon": "IM",
+        "filadelfia": "IM",
+        "sctHans": "NM",
+        "predicted": "IM"
+      },
+      {
+        "diplotype": "*2/*2",
+        "reports": 1,
+        "absalon": "PM",
+        "filadelfia": "PM",
+        "sctHans": "PM",
+        "predicted": "PM"
+      }
+    ]
   }
 }

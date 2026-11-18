@@ -4,9 +4,12 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const {lookup} = require("../lookup.js");
 const source = fs.readFileSync(path.join(__dirname, "cases.tsv"), "utf8");
-const [head, ...lines] = source.trim().split(/\r?\n/);
-const keys = head.split("\t");
-const cases = lines.map(line => Object.fromEntries(line.split("\t").map((v,i) => [keys[i],v])));
+function parseTsv(text) {
+  const [header, ...lines] = text.trim().split(/\r?\n/);
+  const keys = header.split("\t");
+  return lines.map(line => Object.fromEntries(line.split("\t").map((value, index) => [keys[index], value])));
+}
+const cases = parseTsv(source);
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, "../../data/pgx-data.json")));
 const drugs = Object.fromEntries(data.drugs.map(x => [x.key,x]));
 const code = {"Normal Metabolizer":"NM","Intermediate Metabolizer":"IM","Poor Metabolizer":"PM",
@@ -45,9 +48,41 @@ for (const split of ["development","test"]) {
   const set = cases.filter(c=>c.split===split);
   report.splits[split] = {contextAware:score(set,lookup),fixedContext:score(set,c=>legacy(c)),drugOnly:score(set,c=>legacy(c,true))};
 }
-if (process.argv.includes("--json")) console.log(JSON.stringify(report,null,2));
-else for (const [split,methods] of Object.entries(report.splits)) {
-  for (const [method,r] of Object.entries(methods)) console.log(
-    split,method,"exact",r.exact+"/"+r.n,"category+strength",r.categoryAndStrength+"/"+r.n,
-    "rows emitted on review cases",r.rowsOnReviewCases+"/"+r.reviewExpected);
+// Restrict this comparison to complete cases with a diplotype supported by both editions.
+const sharedCases = cases.filter(c => c.split === "test" && c.state === "row" && legacy(c).state === "row");
+report.sharedPanel = {contextAware: score(sharedCases, lookup), fixedContext: score(sharedCases, c => legacy(c))};
+
+const publishedText = fs.readFileSync(path.join(__dirname, "published-phenotypes.tsv"), "utf8");
+const labs = {absalon: 0, filadelfia: 0, sctHans: 0};
+let reports = 0;
+const groups = parseTsv(publishedText).map(group => {
+  // Fixed placeholders exercise only genotype-to-phenotype translation. No treatment labels were published.
+  const result = lookup({drug: "clopidogrel", age: "adult", context: "acs", diplotype: group.diplotype});
+  const count = Number(group.reports);
+  reports += count;
+  for (const lab of Object.keys(labs)) {
+    if (result.state === "row" && result.phenotype === group[lab]) labs[lab] += count;
+  }
+  return {...group, reports: count, predicted: result.phenotype ?? null};
+});
+report.publishedPhenotypes = {source: "10.1111/bcpt.13990, Table 2", reports, labs, groups};
+
+if (process.argv.includes("--json")) {
+  console.log(JSON.stringify(report, null, 2));
+} else {
+  for (const [split, methods] of Object.entries(report.splits)) {
+    for (const [method, r] of Object.entries(methods)) console.log(
+      split, method, "exact", r.exact + "/" + r.n, "category+strength", r.categoryAndStrength + "/" + r.n,
+      "rows emitted on review cases", r.rowsOnReviewCases + "/" + r.reviewExpected);
+  }
+  for (const [method, r] of Object.entries(report.sharedPanel)) console.log("shared-panel", method, "exact", r.exact + "/" + r.n);
+  for (const [lab, agree] of Object.entries(labs)) console.log("published CYP2C19 phenotypes", lab, agree + "/" + reports);
+}
+if (process.argv.includes("--check")) {
+  const mismatches = Object.values(report.splits).flatMap(s => s.contextAware.rows.filter(r => !r.exact));
+  const absalonMismatches = groups.filter(g => g.predicted !== g.absalon);
+  if (mismatches.length || absalonMismatches.length) {
+    console.error("Unexpected conformance differences:", mismatches.map(r => r.id), absalonMismatches.map(g => g.diplotype));
+    process.exitCode = 1;
+  }
 }
