@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenePath — from a gene report to two real decisions</title>
+<meta name="description" content="Educational demo: understand what a pharmacogenomic result means for clopidogrel, warfarin or simvastatin, and find recruiting clinical trials near you.">
+<meta property="og:title" content="GenePath — from a gene report to two real decisions">
+<meta property="og:description" content="Is my medication affected by my genes? Is there a clinical trial that fits me? Built on All of Us, CPIC and ClinicalTrials.gov public data.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e2f29'/%3E%3Ctext x='16' y='23' font-size='19' font-weight='700' text-anchor='middle' fill='%237fe0cd' font-family='Arial'%3EG%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --ink: #14201d; --muted: #5a6b66; --line: #dde5e2;
+    --accent: #0b7a68; --accent-soft: #e2f3ef; --warn: #b4530a; --warn-soft: #fdf0e1;
+    --danger: #a8322d; --danger-soft: #fbe9e7; --ok: #1f7a3d; --ok-soft: #e6f4ea;
+    --bar: #9fc9c0; --bar-hi: #0b7a68;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  header.top { background: #0e2f29; color: #fff; padding: 28px 16px 24px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header.top .wrap { padding: 0; }
+  h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: -0.5px; }
+  h1 span { color: #7fe0cd; }
+  .tagline { margin: 0; color: #cfe6e0; max-width: 640px; }
+  .notice { background: var(--warn-soft); border-bottom: 1px solid #f0d5b0; color: #6b3606; font-size: 14px; padding: 9px 16px; }
+  .notice .wrap { padding: 0; }
+  nav.steps { display: flex; gap: 8px; margin: 20px 0 4px; flex-wrap: wrap; }
+  nav.steps a { text-decoration: none; color: var(--accent); background: var(--accent-soft); padding: 7px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; }
+  section.module { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 16px 0 24px; }
+  h2 { margin: 0 0 4px; font-size: 22px; }
+  .sub { margin: 0 0 16px; color: var(--muted); }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  select, input[type=number] { width: 100%; padding: 9px 10px; font: inherit; border: 1px solid #c4d1cd; border-radius: 8px; background: #fff; color: var(--ink); }
+  button { font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; padding: 9px 16px; }
+  button.ghost { background: #fff; color: var(--accent); }
+  button:disabled { opacity: .6; cursor: default; }
+  .pillrow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .pill { border: 1px solid #c4d1cd; background: #fff; color: var(--ink); border-radius: 999px; padding: 7px 14px; font-weight: 600; }
+  .pill[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .card-head { padding: 14px 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .card-head.ok { background: var(--ok-soft); } .card-head.warn { background: var(--warn-soft); } .card-head.danger { background: var(--danger-soft); }
+  .badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; color: #fff; }
+  .ok .badge { background: var(--ok); } .warn .badge { background: var(--warn); } .danger .badge { background: var(--danger); }
+  .card-head strong { font-size: 17px; }
+  .card-body { padding: 16px 18px; display: grid; gap: 14px; }
+  .card-body h3 { margin: 0 0 3px; font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .card-body p { margin: 0; }
+  .term { border-bottom: 1px dotted var(--muted); cursor: help; }
+  .glossline { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .chart { border-top: 1px solid var(--line); padding: 16px 18px; }
+  .chart h3 { margin: 0 0 2px; font-size: 16px; }
+  .chart .hint { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .bars { display: grid; gap: 7px; }
+  .bar { display: grid; grid-template-columns: 150px 1fr 120px; gap: 10px; align-items: center; font-size: 14px; }
+  .bar .track { background: #eef3f1; border-radius: 6px; height: 20px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--bar); border-radius: 6px; transition: width .35s; }
+  .bar.hi .fill { background: var(--bar-hi); } .bar.hi .name, .bar.hi .val { font-weight: 700; }
+  .bar .val small { color: var(--muted); font-weight: 400; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tabs button { background: #fff; color: var(--ink); border-color: #c4d1cd; padding: 5px 12px; font-size: 13px; }
+  .tabs button[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .source { font-size: 12px; color: var(--muted); padding: 10px 18px; background: #fafcfb; border-top: 1px solid var(--line); }
+  .source a, .trial a { color: var(--accent); }
+  .handoff { margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); font-weight: 600; margin: 0; }
+  .toggle input { width: 18px; height: 18px; }
+  .actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .status { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+  .status.err { color: var(--danger); }
+  .trial { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .trial h3 { margin: 0 0 2px; font-size: 17px; }
+  .trial .official { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip { font-size: 12px; font-weight: 600; background: var(--accent-soft); color: #0a5e50; padding: 3px 9px; border-radius: 999px; }
+  .chip.grey { background: #eef1f0; color: var(--muted); }
+  .trial details { margin-top: 8px; }
+  .trial summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  .crit { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .crit li { border-left: 3px solid var(--bar); padding-left: 10px; }
+  .crit .orig { font-size: 14px; }
+  .crit .plain { font-size: 14px; color: #0a5e50; background: var(--accent-soft); border-radius: 6px; padding: 4px 8px; margin-top: 4px; display: inline-block; }
+  .contact { font-size: 14px; margin-top: 10px; }
+  footer { color: var(--muted); font-size: 13px; padding: 4px 0 40px; }
+  :focus-visible { outline: 3px solid #f0a53a; outline-offset: 2px; }
+  .insight { margin: 12px 0 0; font-size: 14px; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; color: #0a5e50; }
+  .ask { border-top: 1px solid var(--line); padding: 14px 18px; }
+  .ask h3 { margin: 0 0 6px; font-size: 16px; }
+  .ask ul { margin: 0; padding-left: 20px; } .ask li { margin: 2px 0; }
+  .ask button { margin-top: 10px; }
+  .trial .lead { font-size: 14px; margin: 0 0 8px; }
+  @media (min-width: 760px) { .card-body { grid-template-columns: 1fr 1fr; gap: 22px; } .bar { grid-template-columns: 190px 1fr 150px; } }
+  @media print {
+    body { background: #fff; } header.top { background: #fff; color: #000; padding: 0 0 8px; } h1 span, .tagline { color: #000; }
+    nav.steps, #trials, #medControls, .handoff, .tabs, .ask button, footer p:last-child { display: none !important; }
+    section.module { border: 0; padding: 0; } .card, .trial { break-inside: avoid; }
+    .bar .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+  @media (max-width: 560px) { .bar { grid-template-columns: 96px 1fr 92px; font-size: 13px; } h1 { font-size: 25px; } section.module { padding: 16px; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <h1>Gene<span>Path</span></h1>
+  <p class="tagline">From one pharmacogenomic report to two real decisions: <b>is my medication affected?</b> and <b>is there a clinical trial that fits me?</b></p>
+</div></header>
+<div class="notice"><div class="wrap"><b>Educational demo — not medical advice.</b> Never start, stop or change a medication based on this page; talk to your clinician or pharmacist. Nothing you enter here is stored or sent anywhere except the public ClinicalTrials.gov search.</div></div>
+
+<div class="wrap">
+  <nav class="steps"><a href="index.html">PGx guideline review</a><a href="#med">1 · Medication gene card</a><a href="#trials">2 · Clinical trial navigator</a></nav>
+
+  <section class="module" id="med">
+    <div class="eyebrow">Step 1</div>
+    <h2>Medication gene card</h2>
+    <p class="sub">Pick a medication and the result written on your gene report. <i>Pharmacogenomics</i> means how your genes change the way your body handles a drug.</p>
+    <div class="controls" id="medControls"></div>
+    <div class="card" id="medCard" aria-live="polite"></div>
+    <div class="handoff" id="handoff"></div>
+  </section>
+
+  <section class="module" id="trials">
+    <div class="eyebrow">Step 2</div>
+    <h2>Clinical trial navigator</h2>
+    <p class="sub">Find studies that are recruiting right now near you, with the key entry rules explained in plain words. Live data from ClinicalTrials.gov.</p>
+    <div class="controls">
+      <div><label for="cond">Condition</label><select id="cond"></select></div>
+      <div><label for="age">Age</label><input id="age" type="number" min="0" max="110" value="68"></div>
+      <div><label for="sex">Sex</label><select id="sex"><option value="ALL">Any / prefer not to say</option><option value="FEMALE">Female</option><option value="MALE">Male</option></select></div>
+      <div><label for="city">Near</label><select id="city"></select></div>
+      <div><label for="radius">Within</label><select id="radius"><option>50</option><option selected>150</option><option>300</option></select></div>
+    </div>
+    <div class="actions">
+      <button id="searchBtn">Find recruiting trials</button>
+      <label class="toggle"><input type="checkbox" id="sampleToggle"> Use saved sample data (works offline)</label>
+    </div>
+    <p class="status" id="trialStatus" role="status" aria-live="polite">Choose a condition and press the button.</p>
+    <div id="trialList"></div>
+  </section>
+
+  <footer>
+    <p><b>Data sources.</b> Allele frequencies: All of Us Research Program public Data Browser (aggregate data, retrieved Nov 2026). Prescribing guidance: the CPIC API (api.cpicpgx.org), quoted verbatim. Trials: ClinicalTrials.gov API v2, queried live from your browser.</p>
+    <p><b>Limits.</b> Frequencies describe populations, not individuals. Guideline text is quoted from CPIC and applies to specific clinical situations. Trial listings may change daily; only the study team can confirm whether you qualify. Plain-language notes are simplified explanations of medical terms, not eligibility decisions.</p>
+  </footer>
+</div>
+
+<script src="pgx-data.js?v=2026-11-13"></script>
+<script src="snapshot.js?v=2026-11-13"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------------- Module 1: medication gene card ----------------
+   All genotype, phenotype and guideline text comes from window.PGX_DATA, which
+   tools/build_pgx_data.py generates from the CPIC API and the All of Us public
+   Data Browser. Nothing clinical is hand-written here. */
+const D = window.PGX_DATA || { drugs: [], variants: {}, genePlain: {} };
+const GROUPS = ["AFR", "EUR", "AMR", "EAS", "SAS", "MID"];
+const SHORT = { AFR: "African", EUR: "European", AMR: "Latino / Adm. American", EAS: "East Asian", SAS: "South Asian", MID: "Middle Eastern" };
+const CLASS_PLAIN = { Strong: "CPIC rates this as a strong recommendation.", Moderate: "CPIC rates this as a moderate recommendation.", Optional: "CPIC rates this as optional.", "No Recommendation": "CPIC makes no recommendation for this result." };
+// Which trial search follows naturally from a drug's category.
+const GROUP_TRIAL = { "Heart and blood": "afib", "Cholesterol": "chol", "Stomach and reflux": "gerd",
+  "Mental health": "depression", "Pain and inflammation": "oa", "Immune conditions": "ra", "Cancer treatment": "crc" };
+
+// Warfarin is dosed by algorithm rather than a phenotype table, so it keeps a card
+// built from the genotype table in the FDA warfarin label.
+const WARF_C9 = ["*1/*1", "*1/*2", "*1/*3", "*2/*2", "*2/*3", "*3/*3"];
+const WARF_BANDS = { GG: [0, 0, 1, 1, 1, 2], AG: [0, 1, 1, 1, 2, 2], AA: [1, 1, 2, 2, 2, 2] };
+
+const med = { drug: D.drugs.length ? D.drugs[0].key : null, geno: 0, c9: "*1/*2", vk: "AG", variant: null };
+const drugOf = (k) => D.drugs.find((d) => d.key === k);
+// The drug's own gene charts first, so the chart matches the gene named on the card.
+const variantsOf = (d) => Object.values(D.variants)
+  .filter((v) => v.gene === d.gene || (d.special === "warfarin" && v.gene === "CYP2C9"))
+  .sort((x, y) => (x.gene === d.gene ? 0 : 1) - (y.gene === d.gene ? 0 : 1));
+
+function renderMedControls() {
+  const d = drugOf(med.drug);
+  const cats = [...new Set(D.drugs.map((x) => x.group))];
+  const drugSel = `<div><label for="drugSel">Medication</label><select id="drugSel">${cats.map((c) =>
+    `<optgroup label="${esc(c)}">${D.drugs.filter((x) => x.group === c).map((x) =>
+      `<option value="${esc(x.key)}" ${x.key === med.drug ? "selected" : ""}>${esc(x.name)}${x.gene ? " · " + esc(x.gene) : ""}</option>`).join("")}</optgroup>`).join("")}</select></div>`;
+  let genoSel;
+  if (d.special === "warfarin") {
+    genoSel = `<div><label for="sel_c9">CYP2C9 result</label><select id="sel_c9">${WARF_C9.map((g) =>
+        `<option value="${g}" ${g === med.c9 ? "selected" : ""}>${g}</option>`).join("")}</select></div>
+      <div><label for="sel_vk">VKORC1 −1639 result</label><select id="sel_vk">${[["GG", "G/G — typical sensitivity"], ["AG", "A/G — more sensitive"], ["AA", "A/A — most sensitive"]].map(([v, t]) =>
+        `<option value="${v}" ${v === med.vk ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>`;
+  } else {
+    if (med.geno >= d.diplotypes.length) med.geno = 0;
+    genoSel = `<div><label for="sel_g">${esc(d.gene)} result on your report</label><select id="sel_g">${d.diplotypes.map((p, i) =>
+      `<option value="${i}" ${i === med.geno ? "selected" : ""}>${esc(p.diplotype)} — ${esc(p.phenotype)}</option>`).join("")}</select></div>`;
+  }
+  $("medControls").innerHTML = drugSel + genoSel;
+}
+
+function warfarinResult() {
+  const band = WARF_BANDS[med.vk][WARF_C9.indexOf(med.c9)];
+  const T = [["ok", "Typical dose need expected"], ["warn", "Lower dose need likely"], ["danger", "Much lower dose need likely"]][band];
+  const c9 = med.c9 === "*1/*1" ? "Your CYP2C9 enzyme clears warfarin at the usual speed." : "Your CYP2C9 enzyme clears warfarin more slowly than usual, so the drug stays in your body longer.";
+  const vk = med.vk === "GG" ? "Your VKORC1 result means typical sensitivity to warfarin." : med.vk === "AG" ? "Your VKORC1 result means you are somewhat more sensitive to warfarin." : "Your VKORC1 result means you are highly sensitive to warfarin.";
+  const act = ["Your genes do not point to an unusual dose. Dosing is still individual and guided by regular INR blood tests.",
+    "People with this combination usually end up on a lower-than-average dose. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, alongside INR blood tests.",
+    "People with this combination usually need a much lower dose and can take longer to reach a stable level. CPIC recommends that prescribers use a validated genetics-based dosing calculator when starting warfarin, with close INR monitoring."][band];
+  const alt = med.c9 === "*2/*3" || med.c9 === "*3/*3" ? " For this CYP2C9 result, CPIC also notes that a different oral blood thinner might be considered." : "";
+  return { severity: T[0], phenotype: T[1], meaning: c9 + " " + vk, implication: "", recommendation: act + alt,
+    classification: "", result: `${med.c9}, VKORC1 ${med.vk}`,
+    extra: "Dose bands follow the CYP2C9 × VKORC1 table in the FDA warfarin label. For people of African ancestry, CPIC advises also testing CYP2C9 *5, *6, *8 and *11, which this card does not cover." };
+}
+
+function phenoResult(d) {
+  const p = d.diplotypes[med.geno];
+  const r = (d.recommendations || {})[p.key] || {};
+  const plain = D.genePlain[d.gene] || "";
+  return { severity: p.severity, phenotype: p.phenotype, result: p.diplotype,
+    meaning: `${plain} Your result, ${p.diplotype}, is ${(p.description || "").charAt(0).toLowerCase() + (p.description || "").slice(1)}. CPIC classes that as ${p.phenotype.toLowerCase()}.`,
+    implication: r.implication || "", recommendation: r.recommendation || "No recommendation.",
+    classification: r.classification || "", extra: d.note || "" };
+}
+
+function renderMedCard(reset) {
+  const d = drugOf(med.drug);
+  if (!d) return;
+  const r = d.special === "warfarin" ? warfarinResult() : phenoResult(d);
+  const vs = variantsOf(d);
+  if (reset || !vs.some((v) => v.label === med.variant)) med.variant = vs.length ? vs[0].label : null;
+  const v = vs.find((x) => x.label === med.variant);
+
+  let chart = "";
+  if (v) {
+    const max = Math.max(...GROUPS.map((g) => v.groups[g].freq), v.overall);
+    const order = [...GROUPS].sort((a, b) => v.groups[b].freq - v.groups[a].freq);
+    const hi = order[0], lo = order[order.length - 1];
+    const bars = GROUPS.map((g) => `<div class="bar ${g === hi ? "hi" : ""}"><div class="name">${SHORT[g]}</div><div class="track"><div class="fill" style="width:${(v.groups[g].freq / max * 100).toFixed(1)}%"></div></div><div class="val">${v.groups[g].freq.toFixed(1)}% <small>· ${v.groups[g].carriers < 10 ? v.groups[g].carriers.toFixed(1) : v.groups[g].carriers.toFixed(0)}% carry</small></div></div>`).join("")
+      + `<div class="bar"><div class="name"><i>All participants</i></div><div class="track"><div class="fill" style="width:${(v.overall / max * 100).toFixed(1)}%;background:#c9d3d0"></div></div><div class="val">${v.overall.toFixed(1)}%</div></div>`;
+    const top = v.groups[hi].freq, bot = v.groups[lo].freq, ratio = bot ? top / bot : Infinity;
+    const miss = " A test panel or dose designed around one population can miss this.";
+    const insight = bot === 0
+      ? `Seen in people of ${SHORT[hi]} ancestry (${top.toFixed(1)}%) but not detected at all in ${SHORT[lo]} ancestry in this dataset.${miss}`
+      : ratio >= 1.5
+        ? `Most common in people of ${SHORT[hi]} ancestry (${top.toFixed(1)}%) — about ${ratio.toFixed(ratio >= 10 ? 0 : 1)}× the rate in ${SHORT[lo]} ancestry (${bot.toFixed(1)}%).${miss}`
+        : `This variant is spread fairly evenly across ancestry groups, from ${bot.toFixed(1)}% to ${top.toFixed(1)}%.`;
+    const tabs = vs.length > 1 ? `<div class="tabs">${vs.map((x) => `<button data-variant="${esc(x.label)}" aria-pressed="${x.label === med.variant}">${esc(x.label)}</button>`).join("")}</div>` : "";
+    chart = `<div class="chart">
+      <h3>How common is this variant around the world?</h3>
+      <p class="hint"><b>${esc(v.label)}</b> (${esc(v.rs)}) — ${esc(v.effect)}. Bars show <b>allele frequency</b>: the share of gene copies carrying the variant, not the share of people. “% carry” is the observed share of people with at least one copy.</p>
+      ${tabs}<div class="bars">${bars}</div>
+      <p class="insight">${esc(insight)}</p>
+    </div>`;
+  }
+
+  const asks = r.severity === "ok"
+    ? ["Is this gene result recorded in my medical chart, so future prescribers can see it?", `Are there other medicines I take that ${d.gene} also affects?`, "Should my close relatives know about this result?"]
+    : [`Does my ${d.gene} result change how well or how safely ${d.name.toLowerCase()} works for me?`, "Is there an alternative medicine or dose you would consider, given this result?", "Is this gene result recorded in my medical chart, and should my relatives be tested?"];
+
+  $("medCard").innerHTML = `
+    <div class="card-head ${r.severity}"><span class="badge">${esc(d.gene)}</span><strong>${esc(d.name)} · ${esc(r.phenotype)}</strong></div>
+    <div class="card-body">
+      <div><h3>What your result means</h3><p>${esc(r.meaning)}</p>
+        <p class="glossline">${esc(d.name)}${d.brand ? " (" + esc(d.brand) + ")" : ""} is ${esc(d.use)}.</p></div>
+      <div><h3>What the guideline says</h3>
+        ${r.implication ? `<p><b>Effect:</b> ${esc(r.implication)}.</p>` : ""}
+        <p>${esc(r.recommendation)}</p>
+        <p class="glossline">${esc(CLASS_PLAIN[r.classification] || "")} ${esc(r.extra)} This is guideline information for a conversation with your clinician, not a personal recommendation.</p></div>
+    </div>
+    ${chart}
+    <div class="ask"><h3>Questions to take to your next appointment</h3><ul>${asks.map((q) => `<li>${esc(q)}</li>`).join("")}</ul><button class="ghost" id="printBtn" type="button">Print this card</button></div>
+    <div class="source">Guideline text quoted from CPIC (api.cpicpgx.org) · Frequencies: All of Us Research Program public Data Browser, ${(D.builtFrom.alleles / 2 / 1000).toFixed(0)},000 participants · Built ${esc(D.builtFrom.built || "Nov 2026")}</div>`;
+
+  const cond = GROUP_TRIAL[d.group];
+  const label = (CONDITIONS.find((c) => c.key === cond) || {}).label || "";
+  $("handoff").innerHTML = `<span>Next question: is there a study recruiting people like me?</span><button class="ghost" id="handoffBtn" data-cond="${cond || ""}">${cond ? "See recruiting " + esc(label) + " trials" : "Explore recruiting trials"} →</button>`;
+}
+
+/* ---------------- Module 2: clinical trial navigator ---------------- */
+const CONDITIONS = [
+  { key: "afib", label: "Atrial fibrillation", term: "atrial fibrillation" },
+  { key: "chol", label: "High cholesterol", term: "hypercholesterolemia" },
+  { key: "gerd", label: "Acid reflux (GERD)", term: "gastroesophageal reflux" },
+  { key: "depression", label: "Depression", term: "depression" },
+  { key: "oa", label: "Osteoarthritis", term: "osteoarthritis" },
+  { key: "ra", label: "Rheumatoid arthritis", term: "rheumatoid arthritis" },
+  { key: "crc", label: "Colorectal cancer", term: "colorectal cancer" },
+  { key: "alzheimers", label: "Alzheimer’s disease", term: "Alzheimer disease" },
+  { key: "t2d", label: "Type 2 diabetes", term: "type 2 diabetes" },
+];
+const CITIES = [["Iowa City, IA", 41.6611, -91.5302], ["Chicago, IL", 41.8781, -87.6298], ["Minneapolis, MN", 44.9778, -93.265], ["St. Louis, MO", 38.627, -90.1994],
+  ["New York, NY", 40.7128, -74.006], ["Boston, MA", 42.3601, -71.0589], ["Philadelphia, PA", 39.9526, -75.1652], ["Washington, DC", 38.9072, -77.0369],
+  ["Atlanta, GA", 33.749, -84.388], ["Miami, FL", 25.7617, -80.1918], ["Houston, TX", 29.7604, -95.3698], ["Dallas, TX", 32.7767, -96.797],
+  ["Denver, CO", 39.7392, -104.9903], ["Phoenix, AZ", 33.4484, -112.074], ["Los Angeles, CA", 34.0522, -118.2437], ["San Francisco, CA", 37.7749, -122.4194], ["Seattle, WA", 47.6062, -122.3321]];
+const FIELDS = "NCTId,BriefTitle,OverallStatus,BriefSummary,EligibilityCriteria,MinimumAge,MaximumAge,Sex,Phase,StudyType,CentralContactName,CentralContactPhone,CentralContactEMail,LocationFacility,LocationCity,LocationState,LocationCountry,LocationGeoPoint,LocationStatus";
+
+
+// Rule-based plain-language notes: [pattern, explanation]. First two matches are shown.
+const GLOSSARY = [
+  [/informed consent|capable of providing (written )?consent|consent form|\bICF\b/i, "You must understand what the study involves and agree in writing to take part."],
+  [/assent/i, "A child also has to agree to take part, in addition to a parent’s permission."],
+  [/paroxysmal|\bPAF\b/i, "“Paroxysmal” means the irregular heartbeat comes and goes on its own."],
+  [/persistent (atrial|AF)|\bPsAF\b/i, "“Persistent” means the irregular heartbeat lasts more than a week without stopping by itself."],
+  [/refractory|not tolerated|inadequately (managed|controlled)/i, "The usual treatment has not worked well enough for you, or you could not tolerate it."],
+  [/ablation/i, "Ablation is a procedure that uses a thin tube in the heart to stop the faulty electrical signals."],
+  [/CHA2DS2[- ]?VASc/i, "CHA₂DS₂-VASc is a stroke-risk score based on age and conditions such as high blood pressure, diabetes and past stroke."],
+  [/anticoagula/i, "Anticoagulants are blood thinners (for example warfarin or apixaban)."],
+  [/antiarrhythmic|\bAAD\b/i, "Antiarrhythmic drugs are medicines that keep the heart rhythm steady."],
+  [/\bECOG\b/i, "ECOG 0–1 means you are up and about and able to do light daily activities."],
+  [/RECIST|measurable (disease|tumor|lesion)/i, "At least one tumor must be visible and measurable on a scan, so doctors can track whether it shrinks."],
+  [/metasta|locally advanced|unresectable|not amenable to curative surgery/i, "The cancer has spread or cannot be completely removed with surgery."],
+  [/histologic|cytologic/i, "The diagnosis must be confirmed by looking at a tissue sample under a microscope."],
+  [/dMMR|MSI-H|microsatellite/i, "dMMR / MSI-H is a tumor test result that affects which treatments work; this study needs a specific result."],
+  [/\bBRAF\b|\bKRAS\b|\bNRAS\b|mutation|fusion|wild-type/i, "Your tumor needs to have been tested for specific gene changes; the study accepts only certain results."],
+  [/tumor tissue|archival/i, "You agree to let the study use a sample of your tumor (new or previously stored)."],
+  [/organ and marrow function/i, "Blood tests must show your liver, kidneys and bone marrow are working well enough."],
+  [/HbA1c|A1c/i, "HbA1c is a blood test showing your average blood sugar over about three months."],
+  [/\bBMI\b|kg\/m2|obesity|overweight/i, "BMI is a weight-for-height measure; the study sets a minimum value."],
+  [/incretin|semaglutide|GLP-1/i, "Incretin medicines are drugs like semaglutide or tirzepatide that lower blood sugar and weight."],
+  [/T2DM|type 2 diabetes/i, "You need a confirmed type 2 diabetes diagnosis, usually for a minimum length of time."],
+  [/\bMCI\b|mild cognitive impairment/i, "Mild cognitive impairment means memory or thinking problems that are noticeable but do not stop daily life."],
+  [/cognitively unimpaired/i, "“Cognitively unimpaired” means no memory or thinking problems on testing."],
+  [/MoCA|Montreal Cognitive|clinical dementia rating|\bCDR\b|MMSE/i, "These are short memory and thinking tests; the study needs your score in a set range."],
+  [/study partner|caregiver/i, "Someone who knows you well (a relative or friend) must take part with you."],
+  [/childbearing/i, "There are rules about pregnancy and birth control during the study."],
+  [/completed (study|the week)|enrolled in the/i, "This study is only open to people who already took part in a specific earlier study."],
+  [/stroke|systemic embolism/i, "A history of stroke or a clot that travelled elsewhere in the body is relevant here."],
+  [/\bSLE\b|lupus/i, "SLE is lupus, an autoimmune disease in which the immune system attacks the body's own tissue."],
+  [/classification criteria|EULAR|\bACR\b|diagnosed according to|meets? the .{0,20}criteria/i, "Your diagnosis has to have been made using a specific published checklist that specialists agree on."],
+  [/antibod|anti-nuclear|anti-dsDNA|anti-Sm|titre|titer|serolog|seropositive/i, "A blood test has to show particular antibodies — immune proteins used to confirm the diagnosis."],
+  [/SLEDAI|DAS28|disease activity|active, moderate|moderate-severe|active disease|swollen joint|tender joint/i, "Your condition has to be active enough right now, measured with a standard scoring system."],
+  [/DMARD|methotrexate|biologic|TNF|JAK inhibitor/i, "These are the usual drugs for this condition; the study sets rules about which ones you have already taken."],
+  [/corticosteroid|prednis|glucocorticoid/i, "There are rules about steroid tablets and the dose you are taking."],
+  [/washout|discontinu|must stop|stop taking/i, "You may have to stop a current medicine for a set period before joining."],
+  [/tuberculosis|hepatitis B|hepatitis C|\bHIV\b|active infection/i, "You will be screened for certain infections, which can rule out taking part."],
+  [/eGFR|creatinine|renal function|hepatic function|liver function|haemoglobin|hemoglobin|platelet count/i, "Blood tests have to show your kidneys, liver and blood counts are within a set range."],
+  [/biopsy/i, "A small tissue sample has to be taken for testing."],
+  [/vaccin|immuni[sz]ation/i, "There are rules about which vaccinations you need, and when."],
+  [/at screening|screening visit|\bscreening\b/i, "Screening is the set of checks done before you can join, usually blood tests and a clinic visit."],
+  [/(\d+)\s*(years|yrs)|years of age|\bage[sd]?\b/i, "There is an age requirement — check it against your own age."],
+];
+function plainNote(text) {
+  const hits = GLOSSARY.filter(([re]) => re.test(text)).map(([, t]) => t).slice(0, 2);
+  return hits.length ? hits.join(" ") : "Ask the study team what this rule means for you — their contact details are below.";
+}
+function miles(aLat, aLon, bLat, bLon) {
+  const r = 3958.8, t = Math.PI / 180, dp = (bLat - aLat) * t, dl = (bLon - aLon) * t;
+  const h = Math.sin(dp / 2) ** 2 + Math.cos(aLat * t) * Math.cos(bLat * t) * Math.sin(dl / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+const years = (s) => { const m = /(\d+)\s*(Year|Month|Week|Day)/i.exec(s || ""); if (!m) return null; const n = +m[1]; return /year/i.test(m[2]) ? n : /month/i.test(m[2]) ? n / 12 : 0; };
+const clean = (s) => String(s || "").replace(/\\([<>\[\]&*_])/g, "$1").replace(/\s+/g, " ").trim();
+
+function keyCriteria(text) {
+  const inc = String(text || "").split(/exclusion criteria/i)[0];
+  const bullets = (inc.match(/^\s*(?:\*|-|\d+\.)\s+.+$/gm) || []).map((b) => clean(b.replace(/^\s*(?:\*|-|\d+\.)\s+/, ""))).filter((b) => b.length > 12 && !/(:|\b(OR|AND))$/.test(b));
+  const boiler = /informed consent|consent form|willing and (able|capable)|able and willing/i;
+  const ranked = [...bullets.filter((b) => !boiler.test(b)), ...bullets.filter((b) => boiler.test(b))];
+  return ranked.slice(0, 3).map((b) => (b.length > 260 ? b.slice(0, 257).replace(/\s\S*$/, "") + "…" : b));
+}
+function normalize(study, origin) {
+  const p = study.protocolSection || {}, e = p.eligibilityModule || {}, cl = p.contactsLocationsModule || {};
+  const locs = (cl.locations || []).filter((l) => l.geoPoint && (!l.country || l.country === "United States"))
+    .map((l) => ({ name: l.facility, city: l.city, state: l.state, status: l.status, dist: miles(origin.lat, origin.lon, l.geoPoint.lat, l.geoPoint.lon) }))
+    .sort((a, b) => a.dist - b.dist);
+  const id = p.identificationModule?.nctId;
+  return { id, title: clean(p.identificationModule?.briefTitle), status: p.statusModule?.overallStatus, summary: clean(p.descriptionModule?.briefSummary),
+    type: p.designModule?.studyType, phases: (p.designModule?.phases || []).filter((x) => x !== "NA"),
+    minAge: years(e.minimumAge), maxAge: years(e.maximumAge), minAgeTxt: e.minimumAge, maxAgeTxt: e.maximumAge, sex: e.sex || "ALL",
+    criteria: keyCriteria(e.eligibilityCriteria), locs, contact: (cl.centralContacts || [])[0] };
+}
+function firstSentence(s) { const m = /^(.{40,220}?[.!?])(\s|$)/.exec(s || ""); return m ? m[1] : (s || "").slice(0, 200); }
+
+function renderTrials(list, origin, note, isErr) {
+  const age = +$("age").value || null, sex = $("sex").value;
+  const fits = list.filter((t) => (age == null || ((t.minAge == null || age >= t.minAge) && (t.maxAge == null || age <= t.maxAge))) && (sex === "ALL" || t.sex === "ALL" || t.sex === sex));
+  fits.sort((a, b) => (a.locs[0]?.dist ?? 1e9) - (b.locs[0]?.dist ?? 1e9));
+  const shown = fits.slice(0, 8);
+  $("trialStatus").className = "status" + (isErr ? " err" : "");
+  $("trialStatus").textContent = `${note} ${list.length} recruiting studies found; ${fits.length} are open to age ${age ?? "any"}${sex === "ALL" ? "" : ", " + sex.toLowerCase()}. Showing the ${shown.length} nearest.`;
+  $("trialList").innerHTML = shown.map((t, i) => {
+    const near = t.locs[0];
+    const ageTxt = `${t.minAgeTxt || "No minimum"}${t.maxAgeTxt ? " – " + t.maxAgeTxt : " and older"}`;
+    const c = t.contact;
+    const contact = c ? `${esc(c.name || "Study contact")}${c.phone ? " · " + esc(c.phone) : ""}${c.email ? ` · <a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}` : "See the study page for site contacts";
+    return `<article class="trial">
+      <h3>${esc(t.title)}</h3>
+      <p class="lead">${esc(firstSentence(t.summary))}</p>
+      <p class="official"><a href="https://clinicaltrials.gov/study/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.id)}</a></p>
+      <div class="chips"><span class="chip">${t.status === "RECRUITING" ? "Recruiting now" : esc(t.status)}</span>
+        ${near ? `<span class="chip">${esc(near.city)}, ${esc(near.state)} · ${near.dist < 1 ? "under 1" : Math.round(near.dist)} mi from ${esc(origin.label)}</span>` : `<span class="chip grey">Location not listed</span>`}
+        <span class="chip grey">Ages: ${esc(ageTxt)}</span>
+        <span class="chip grey">${t.type === "OBSERVATIONAL" ? "Observational (no experimental treatment)" : "Tests a treatment" + (t.phases.length ? " · " + esc(t.phases.join("/").replace(/PHASE/g, "Phase ")) : "")}</span></div>
+      <details ${i === 0 ? "open" : ""}><summary>Key entry rules, in plain words</summary>
+        <ul class="crit">${t.criteria.map((k) => `<li><div class="orig">“${esc(k)}”</div><div class="plain">In plain words: ${esc(plainNote(k))}</div></li>`).join("") || "<li>No criteria listed.</li>"}</ul>
+        ${t.locs.length > 1 ? `<p class="contact"><b>Other nearby sites:</b> ${t.locs.slice(1, 4).map((l) => `${esc(l.city)}, ${esc(l.state)} (${Math.round(l.dist)} mi)`).join(" · ")}</p>` : ""}
+        <p class="contact"><b>Contact:</b> ${contact}</p>
+      </details></article>`;
+  }).join("") || `<p class="status">No recruiting studies matched. Try a wider distance or a different age.</p>`;
+}
+
+function showSample(note, isErr) {
+  const snap = window.TRIAL_SNAPSHOT;
+  if (!snap) { $("trialStatus").className = "status err"; $("trialStatus").textContent = "Sample data file (snapshot.js) is missing."; return; }
+  const list = (snap.conditions[$("cond").value] || []).map((s) => normalize(s, snap.origin));
+  const r = (snap.radiusByCondition || {})[$("cond").value];
+  const where = r ? `near ${snap.origin.label} (within ${r} miles)` : "across the United States";
+  renderTrials(list, snap.origin, `${note} Sample data saved ${snap.fetchedAt}, ${where}.`, isErr);
+}
+async function search() {
+  if ($("sampleToggle").checked) return showSample("", false);
+  const cond = CONDITIONS.find((c) => c.key === $("cond").value);
+  const [label, lat, lon] = CITIES[+$("city").value];
+  const origin = { label, lat, lon }, radius = $("radius").value;
+  const ask = async (miles) => {
+    const p = { "query.cond": cond.term, "filter.overallStatus": "RECRUITING", pageSize: "30", fields: FIELDS };
+    if (miles) p["filter.geo"] = `distance(${lat},${lon},${miles}mi)`;
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 12000);
+    const res = await fetch("https://clinicaltrials.gov/api/v2/studies?" + new URLSearchParams(p), { signal: ctl.signal })
+      .finally(() => clearTimeout(timer));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return ((await res.json()).studies || []).map((s) => normalize(s, origin));
+  };
+  $("searchBtn").disabled = true; $("trialStatus").className = "status"; $("trialStatus").textContent = "Searching ClinicalTrials.gov…"; $("trialList").innerHTML = "";
+  try {
+    // Widen the search rather than show an empty page for a rarer condition.
+    const steps = [+radius, 500, null].filter((m, i, a) => i === 0 || m === null || m > a[0]);
+    let list = [], used = steps[0];
+    for (const miles of steps) {
+      list = await ask(miles); used = miles;
+      if (list.length) break;
+    }
+    const where = used ? `within ${used} miles of ${label}` : "across the United States";
+    const widened = used !== steps[0] ? ` No studies within ${radius} miles, so the search was widened.` : "";
+    renderTrials(list, origin, `Live from ClinicalTrials.gov, ${where}.${widened}`, false);
+  } catch (err) {
+    showSample("Could not reach ClinicalTrials.gov, so this is saved sample data instead.", true);
+  } finally { $("searchBtn").disabled = false; }
+}
+
+/* ---------------- wiring ---------------- */
+$("cond").innerHTML = CONDITIONS.map((c) => `<option value="${c.key}">${c.label}</option>`).join("");
+$("city").innerHTML = CITIES.map((c, i) => `<option value="${i}">${c[0]}</option>`).join("");
+$("radius").innerHTML = [50, 150, 300].map((r) => `<option value="${r}" ${r === 150 ? "selected" : ""}>${r} miles</option>`).join("");
+renderMedControls(); renderMedCard(true);
+
+$("medControls").addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.id === "drugSel") { med.drug = t.value; med.geno = 0; renderMedControls(); renderMedCard(true); $("drugSel").focus(); return; }
+  if (t.id === "sel_g") med.geno = +t.value;
+  if (t.id === "sel_c9") med.c9 = t.value;
+  if (t.id === "sel_vk") med.vk = t.value;
+  renderMedCard(true);
+});
+$("medCard").addEventListener("click", (e) => { if (e.target.closest("#printBtn")) return window.print(); const b = e.target.closest("[data-variant]"); if (!b) return; med.variant = b.dataset.variant; renderMedCard(false); });
+$("handoff").addEventListener("click", (e) => { const b = e.target.closest("[data-cond]"); if (!b) return; if (b.dataset.cond) $("cond").value = b.dataset.cond; $("trials").scrollIntoView({ behavior: "smooth" }); search(); });
+$("searchBtn").addEventListener("click", search);
+$("age").addEventListener("keydown", (e) => { if (e.key === "Enter") search(); });
+if (window.TRIAL_SNAPSHOT) showSample("Preview — press “Find recruiting trials” for live results.", false);
+$("sampleToggle").addEventListener("change", () => { const on = $("sampleToggle").checked; if (on) { $("city").value = "0"; $("radius").value = "150"; } $("city").disabled = $("radius").disabled = on; search(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,1360 @@
+{
+  "fixtureSHA256": "23f4340b87e81c7926dd2a3843d894daaee6ef14237e756b235471a406296574",
+  "splits": {
+    "development": {
+      "contextAware": {
+        "n": 6,
+        "categoryAndStrength": 6,
+        "exact": 6,
+        "reviewExpected": 1,
+        "rowsOnReviewCases": 0,
+        "abstainedOnReferenceRows": 0,
+        "rows": [
+          {
+            "id": "D01",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "avoid_standard",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D02",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C3"
+            }
+          },
+          {
+            "id": "D03",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "decreased/normal",
+              "category": "caution20",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "D04",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Obtain the reported ABCG2 function to select the combined row. Individual-gene guidance can be reviewed separately."
+            }
+          },
+          {
+            "id": "D05",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D06",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          }
+        ]
+      },
+      "fixedContext": {
+        "n": 6,
+        "categoryAndStrength": 5,
+        "exact": 4,
+        "reviewExpected": 1,
+        "rowsOnReviewCases": 1,
+        "abstainedOnReferenceRows": 0,
+        "rows": [
+          {
+            "id": "D01",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "avoid_standard",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D02",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D03",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "decreased/normal",
+              "category": "caution20",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "D04",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "D05",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D06",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          }
+        ]
+      },
+      "drugOnly": {
+        "n": 6,
+        "categoryAndStrength": 3,
+        "exact": 2,
+        "reviewExpected": 1,
+        "rowsOnReviewCases": 1,
+        "abstainedOnReferenceRows": 0,
+        "rows": [
+          {
+            "id": "D01",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D02",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D03",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "D04",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "D05",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "D06",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          }
+        ]
+      }
+    },
+    "test": {
+      "contextAware": {
+        "n": 26,
+        "categoryAndStrength": 26,
+        "exact": 26,
+        "reviewExpected": 6,
+        "rowsOnReviewCases": 0,
+        "abstainedOnReferenceRows": 0,
+        "rows": [
+          {
+            "id": "T01",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "UM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T02",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "RM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T03",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "PM",
+              "category": "avoid_drug",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T04",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "avoid_standard",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T05",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "PM",
+              "category": "avoid_drug",
+              "strength": "moderate",
+              "reference": "C3"
+            }
+          },
+          {
+            "id": "T06",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "consider_other",
+              "strength": "moderate",
+              "reference": "C3"
+            }
+          },
+          {
+            "id": "T07",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "RM",
+              "category": "no_guidance",
+              "strength": "none",
+              "reference": "C3"
+            }
+          },
+          {
+            "id": "T08",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "UM",
+              "category": "no_guidance",
+              "strength": "none",
+              "reference": "C2B"
+            }
+          },
+          {
+            "id": "T09",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "no_guidance",
+              "strength": "none",
+              "reference": "C2B"
+            }
+          },
+          {
+            "id": "T10",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2B"
+            }
+          },
+          {
+            "id": "T11",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "PM",
+              "category": "avoid_drug",
+              "strength": "moderate",
+              "reference": "C2B"
+            }
+          },
+          {
+            "id": "T12",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/decreased",
+              "category": "usual",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T13",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/poor",
+              "category": "cap20",
+              "strength": "optional",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T14",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "decreased/decreased",
+              "category": "caution20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T15",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "decreased/poor",
+              "category": "cap10",
+              "strength": "optional",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T16",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/normal",
+              "category": "cap20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T17",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/decreased",
+              "category": "cap20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T18",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/poor",
+              "category": "cap10",
+              "strength": "optional",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T19",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Confirm the indication. Coronary and neurovascular rows can differ for the same diplotype."
+            }
+          },
+          {
+            "id": "T20",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Check the CYP2C19 diplotype. This edition covers *1, *2, *3, *9 and *17."
+            }
+          },
+          {
+            "id": "T21",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Obtain the reported ABCG2 function to select the combined row. Individual-gene guidance can be reviewed separately."
+            }
+          },
+          {
+            "id": "T22",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Confirm the SLCO1B1 report. This edition covers *1/*1, *1/*5 and *5/*5."
+            }
+          },
+          {
+            "id": "T23",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Confirm adult scope. This edition covers adult reports only."
+            }
+          },
+          {
+            "id": "T24",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review",
+              "reason": "Confirm adult scope. This edition covers adult reports only."
+            }
+          },
+          {
+            "id": "T25",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "likely_IM",
+              "category": "consider_other",
+              "strength": "moderate",
+              "reference": "C3"
+            }
+          },
+          {
+            "id": "T26",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "likely_PM",
+              "category": "avoid_drug",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          }
+        ]
+      },
+      "fixedContext": {
+        "n": 26,
+        "categoryAndStrength": 8,
+        "exact": 6,
+        "reviewExpected": 6,
+        "rowsOnReviewCases": 4,
+        "abstainedOnReferenceRows": 6,
+        "rows": [
+          {
+            "id": "T01",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "UM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T02",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "RM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T03",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "PM",
+              "category": "avoid_drug",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T04",
+            "expected": "row",
+            "predicted": "review",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T05",
+            "expected": "row",
+            "predicted": "review",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T06",
+            "expected": "row",
+            "predicted": "review",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T07",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "RM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T08",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "UM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T09",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "avoid_standard",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T10",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T11",
+            "expected": "row",
+            "predicted": "review",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T12",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T13",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T14",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "decreased/normal",
+              "category": "caution20",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T15",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "decreased/normal",
+              "category": "caution20",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T16",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/normal",
+              "category": "cap20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T17",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/normal",
+              "category": "cap20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T18",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/normal",
+              "category": "cap20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T19",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "IM",
+              "category": "avoid_standard",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T20",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T21",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "poor/normal",
+              "category": "cap20",
+              "strength": "moderate",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T22",
+            "expected": "review",
+            "predicted": "review",
+            "action": true,
+            "exact": true,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T23",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T24",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "PM",
+              "category": "avoid_drug",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T25",
+            "expected": "row",
+            "predicted": "review",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "review"
+            }
+          },
+          {
+            "id": "T26",
+            "expected": "row",
+            "predicted": "review",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "review"
+            }
+          }
+        ]
+      },
+      "drugOnly": {
+        "n": 26,
+        "categoryAndStrength": 3,
+        "exact": 0,
+        "reviewExpected": 6,
+        "rowsOnReviewCases": 6,
+        "abstainedOnReferenceRows": 0,
+        "rows": [
+          {
+            "id": "T01",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T02",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T03",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T04",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T05",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T06",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T07",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T08",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T09",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T10",
+            "expected": "row",
+            "predicted": "row",
+            "action": true,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T11",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T12",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T13",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T14",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T15",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T16",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T17",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T18",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T19",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T20",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T21",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T22",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T23",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "normal/normal",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "S5"
+            }
+          },
+          {
+            "id": "T24",
+            "expected": "review",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T25",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          },
+          {
+            "id": "T26",
+            "expected": "row",
+            "predicted": "row",
+            "action": false,
+            "exact": false,
+            "result": {
+              "state": "row",
+              "phenotype": "NM",
+              "category": "usual",
+              "strength": "strong",
+              "reference": "C2A"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

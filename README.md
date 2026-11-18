@@ -1,77 +1,44 @@
-# GenePath
+# GenePath | PGx guideline review
 
-**From one pharmacogenomic report to two real decisions:** is my current medication affected, and is there a recruiting clinical trial that fits me?
+GenePath retrieves an adult CPIC guideline row for a pharmacist reviewing a clopidogrel or rosuvastatin report. Enter the reported diplotype and indication or companion-gene phenotype. The result shows the source table, action category, and recommendation strength. Missing inputs prompt review.
 
-Built for DSH Hacks V2 (AI × Healthcare). Educational demo only — not medical advice.
+[73-second captioned demo](docs/ai-for-medicine/genepath-demo.mp4) · [Competition write-up](docs/ai-for-medicine/submission.md) · [Per-case predictions](review/evaluation/predictions.json)
 
-**Live demo:** https://candicewu0515.github.io/genepath/
+## Run the project
 
-## What it does
+Open `index.html` in a modern browser. The review runs offline using the included files. No API key, installation, telemetry, storage, or inference service is required. Source links open the published guidelines online.
 
-1. **Medication gene card** — pick one of 16 medicines across 8 genes (blood thinners, statins, acid-reflux drugs, antidepressants, anti-inflammatory painkillers, chemotherapy, immune suppressants and a transplant drug) and the genotype from a gene report. The card explains what the result means in plain words, quotes the CPIC guideline verbatim, and shows how common the variant is across six genetic-ancestry groups.
-2. **Clinical trial navigator** — pick one of 9 conditions plus age, sex and city. The page queries ClinicalTrials.gov live for recruiting studies, widens the search if nothing is nearby, sorts by distance, and explains the three key entry rules of each study in plain words.
+With Node.js 18 or later, the same lookup is available from the command line. Run these commands from the repository root.
 
-## Run it
-
-Open `index.html` in a browser. No build step, no server, no API key.
-
-The live site is served by GitHub Pages from the `main` branch; every push updates it.
-
-## Submission bundle
-
-The zip uploaded to Devpost is not kept in the repository; rebuild it when needed:
-
-```bash
-git archive --format=zip --prefix=genepath/ -o genepath-code.zip HEAD
+```sh
+node review/case.cjs clopidogrel adult '*1/*2' acs
+node review/case.cjs clopidogrel adult '*1/*2' neuro
+node review/case.cjs rosuvastatin adult '*1/*5' unknown
+node review/evaluation/run.cjs
+node review/evaluation/run.cjs --json
 ```
 
-## Rebuild the data
+The last command includes predictions for every example and a SHA-256 digest of the frozen reference file. To regenerate the browser score table after changing the evaluation, run `node review/evaluation/summary.cjs`. The benchmark is deterministic and has no trained parameters or random seeds.
 
-The committed data files are generated. To refresh them from the public APIs:
+## Evaluation
 
-```bash
-python3 tools/build_pgx_data.py      # genes, guidelines, frequencies -> pgx-data.js
-python3 tools/make_snapshot.py       # offline trial sample -> snapshot.js
-python3 tools/verify_frequencies.py  # re-check every frequency against All of Us
-```
+Six development examples and 26 test examples are listed in [cases.tsv](review/evaluation/cases.tsv). The reference labels were transcribed from published CPIC tables before implementing this edition. All 32 input tuples are distinct, including after canonicalizing allele order. Synthetic cases deliberately sample boundary conditions. Guideline rules informed both the implementation and the reference. The cases were visible to the author, so this is a frozen conformance suite with a separate test partition. Independent and blinded clinical validation remains pending.
 
-`build_pgx_data.py` fails loudly if a configured genotype, drug or variant cannot be
-confirmed upstream, so the app never ships a value that was not checked.
+| Method on 26 test cases | Exact row or appropriate review | Action category and strength or appropriate review | Row emitted on six cases requiring review |
+|---|---:|---:|---:|
+| Context-aware GenePath | 26/26 | 26/26 | 0/6 |
+| Fixed-context lookup | 6/26 | 8/26 | 4/6 |
+| Medication-only default | 0/26 | 3/26 | 6/6 |
 
-## Files
+An exact row requires the expected primary phenotype (and companion phenotype for rosuvastatin), source and indication column, category, and strength. In six incomplete or out-of-scope reports the expected output was referral with no row. A matched row explicitly stating that CPIC gives no recommendation is scored separately from a referral. The latter reflects missing inputs or a project scope limit.
 
-| File | Purpose |
-|---|---|
-| `index.html` | The whole app (HTML, CSS, JavaScript) |
-| `pgx-data.js` | Generated gene, guideline and frequency data (never edited by hand) |
-| `snapshot.js` | Saved trial results, used by the "sample data" switch and as a fallback when offline |
-| `data/pgx-data.json` | The same gene data as plain JSON, for reading and checking |
-| `data/trials-snapshot.json` | The same trial snapshot as plain JSON |
-| `tools/build_pgx_data.py` | Rebuilds `pgx-data.js` from the CPIC and All of Us APIs |
-| `tools/verify_frequencies.py` | Re-checks every frequency against All of Us |
-| `tools/make_snapshot.py` | Regenerates the trial snapshot |
-| `docs/pgx-frequency-data.md` | Reference table of the six original frequencies, with its verification record |
-| `docs/one-pager.html` | Source of the one-page summary; print to PDF to regenerate |
-| `docs/one-pager.pdf` | One-page project summary |
-| `docs/devpost-description.md` | Project story text for the Devpost page |
-| `docs/recording-script.md` | Demo video script: each block pairs the on-screen action with the line to read |
+The fixed-context comparator reconstructs the two original cards using the committed genotype data, with ACS/PCI or normal ABCG2 as the default. An unavailable diplotype is counted as review, and reverse allele order is accepted. The medication-only comparator also assumes the reference diplotype. The comparators model structured lookup, without a pharmacist reading the full guideline or the caveats on the historical site. These figures therefore describe the benchmark and its assumptions. They do not estimate a clinician's accuracy, time saved, or patient outcomes.
 
-## Data sources
+## Scope and provenance
 
-- **Allele frequencies:** All of Us Research Program public Data Browser (`public.api.researchallofus.org`), aggregate data from about 535,000 participants. No login is needed; only summary counts are used. Every number is re-checked by `tools/verify_frequencies.py`.
-- **Prescribing guidance:** the CPIC API (`api.cpicpgx.org`). Genotype, phenotype and recommendation text are pulled verbatim, so no guideline wording is written by hand. Warfarin is the one exception: it is dosed by algorithm, so its card follows the CYP2C9 x VKORC1 table in the FDA warfarin label.
-- **Trials:** ClinicalTrials.gov API v2, queried from the browser at search time.
+The clopidogrel module covers adult reports with pairs from CYP2C19 *1, *2, *3, *9 and *17 and three indication groups. The rosuvastatin module covers SLCO1B1 *1/*1, *1/*5 and *5/*5 with reported ABCG2 function. It uses the adult combined table only. CPIC also provides single-gene guidance. An absent ABCG2 result prompts review under this edition's scope. The interface accepts a typed star-allele pair and never infers alleles from raw sequence. Entries are educational references for review. A row can still require assessment of contraindications, other medications, organ function, and population-specific labeling.
 
-## How AI was used
-
-- The app was designed and built with AI coding assistants, including the data pipeline that pulls and cross-checks both APIs.
-- Plain-language notes on trial entry rules come from a fixed glossary in `index.html`, and the clinical text is quoted from CPIC. The page makes **no AI calls at run time**, so nothing a user enters reaches a model and the output cannot hallucinate.
-
-## Limits
-
-- Frequencies are population-level allele frequencies, not the share of people affected and not a prediction for any individual.
-- Guideline text is quoted from CPIC rather than paraphrased, so it keeps clinical wording. The clopidogrel card shows the recommendations for acute coronary syndrome and stent (PCI) patients; the warfarin card does not cover the extra CYP2C9 variants CPIC recommends testing in people of African ancestry.
-- Only common variants are covered. CYP2D6, which drives codeine, tramadol and many antidepressants, needs copy-number calling and is not included. Where a guideline uses two genes, the card fixes the second at normal function and says so.
-- The trial list is a starting point. Only the study team can confirm eligibility.
-- The offline trial sample is a snapshot; recruiting status changes daily, so the live search is the accurate one.
-- Nothing entered on the page is stored; the only network request is the public ClinicalTrials.gov search (condition and city, no personal identifiers).
+- Lee et al. CPIC CYP2C19 and clopidogrel therapy, 2022 update. Tables 1–3. DOI [10.1002/cpt.2526](https://doi.org/10.1002/cpt.2526).
+- Cooper-DeHoff et al. CPIC SLCO1B1, ABCG2, CYP2C9 and statin-associated musculoskeletal symptoms. Table 5. DOI [10.1002/cpt.2557](https://doi.org/10.1002/cpt.2557).
+- Original GenePath by Xia Wu, first submitted to DSH Hacks V2. The original two-module interface is available in [explorer.html](explorer.html). Its data pipeline and attribution are documented in [the original README](docs/original-readme.md). The older 16-drug explorer and clinical trial search are outside this evaluation.
+- OpenAI Codex assisted with implementing lookup rules, transcribing synthetic cases, testing, and preparing the written and video demo. There are no run-time AI calls in the review.
